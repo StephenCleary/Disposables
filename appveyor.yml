@@ -1,0 +1,32 @@
+version: '{build}'
+os: Visual Studio 2015
+configuration: Debug
+environment:
+  COVERALLS_REPO_TOKEN:
+    secure: 1zB4tgv4S6lc2uhETUrTprrBCW8tVUib/ny3wI8tudjWyhFkJz9yKw45Vyc7lJ9L
+branches:
+  only:
+    - master
+install:
+- ps: >-
+    nuget update -self
+
+    Invoke-WebRequest "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.ps1" -OutFile ".\dotnet-install.ps1"
+
+    $env:DOTNET_INSTALL_DIR = "$pwd\.dotnetcli"
+
+    & .\dotnet-install.ps1 -Channel "preview" -Version "1.0.0-preview2-003121" -InstallDir "$env:DOTNET_INSTALL_DIR"
+
+build_script:
+- ps: ./Build.ps1
+test_script:
+- ps: ./Coverage.ps1
+artifacts:
+  - path: '**\*.nupkg'
+    name: NuGet Packages
+deploy:
+  provider: NuGet
+  api_key:
+    secure: QeC34B7ohkvqbwCOKmavQWhitZNYLX/EFdgK8CfL5jEujWw2L85qrzuME8CQRBEb
+  on:
+    appveyor_repo_tag: true

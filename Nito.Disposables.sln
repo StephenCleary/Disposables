@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9EE9E525-B5E5-4899-AA22-C2202EBE590A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7B1B4561-CF9F-480A-A66B-D6DA6AF1C4FB}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Nito.Disposables", "src\Nito.Disposables\Nito.Disposables.xproj", "{0B6A4BE8-63D1-4447-A365-2FFEDCA75B52}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UnitTests", "test\UnitTests\UnitTests.xproj", "{FF538303-1B64-4499-9E49-390C580BF63F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7EBA6ADD-9700-4C4C-A676-FF2A35CA8B50}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0B6A4BE8-63D1-4447-A365-2FFEDCA75B52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B6A4BE8-63D1-4447-A365-2FFEDCA75B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B6A4BE8-63D1-4447-A365-2FFEDCA75B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B6A4BE8-63D1-4447-A365-2FFEDCA75B52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF538303-1B64-4499-9E49-390C580BF63F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF538303-1B64-4499-9E49-390C580BF63F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF538303-1B64-4499-9E49-390C580BF63F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF538303-1B64-4499-9E49-390C580BF63F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0B6A4BE8-63D1-4447-A365-2FFEDCA75B52} = {9EE9E525-B5E5-4899-AA22-C2202EBE590A}
+		{FF538303-1B64-4499-9E49-390C580BF63F} = {7EBA6ADD-9700-4C4C-A676-FF2A35CA8B50}
+	EndGlobalSection
+EndGlobal

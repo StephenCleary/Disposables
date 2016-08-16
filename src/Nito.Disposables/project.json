@@ -1,0 +1,31 @@
+﻿{
+  "version": "1.0.0-pre",
+  "description": "IDisposable helper types.",
+  "authors": [ "Stephen Cleary" ],
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true
+  },
+  "packOptions": {
+    "tags": [ "idisposable" ],
+    "projectUrl": "https://github.com/StephenCleary/Disposables",
+    "licenseUrl": "https://raw.githubusercontent.com/StephenCleary/Disposables/master/LICENSE",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/StephenCleary/Disposables.git"
+    }
+  },
+  "frameworks": {
+    "netstandard1.0": {
+      "dependencies": {
+        "System.Threading": "4.0.11"
+      }
+    },
+    ".NETPortable,Version=v4.5,Profile=Profile259": {
+      "frameworkAssemblies": {
+        "System.Runtime": { "type": "build" },
+        "System.Threading": { "type": "build" }
+      }
+    }
+  }
+}
