@@ -39,5 +39,23 @@ namespace Nito.Disposables
             if (context != null)
                 Dispose(context);
         }
+
+        /// <summary>
+        /// Attempts to update the stored context. This method returns <c>false</c> if this instance has already been disposed.
+        /// </summary>
+        /// <param name="contextUpdater">The function used to update an existing context. This may be called more than once if more than one thread attempts to simultanously update the context.</param>
+        protected bool TryUpdateContext(Func<T, T> contextUpdater)
+        {
+            while (true)
+            {
+                var originalContext = Interlocked.CompareExchange(ref _context, _context, _context);
+                if (originalContext == null)
+                    return false;
+                var updatedContext = contextUpdater(originalContext);
+                var result = Interlocked.CompareExchange(ref _context, updatedContext, originalContext);
+                if (ReferenceEquals(originalContext, result))
+                    return true;
+            }
+        }
     }
 }
