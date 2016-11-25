@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.0.0",
+  "version": "1.1.0-alpha-01",
   "description": "IDisposable helper types.",
   "authors": [ "Stephen Cleary" ],
   "buildOptions": {
