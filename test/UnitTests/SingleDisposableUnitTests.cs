@@ -6,10 +6,6 @@ using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
-// TODO:
-// Split into SingleDisposable + SingleNonblockingDisposable
-// Wrap context into a context + action class.
-
 namespace UnitTests
 {
     public class SingleDisposableUnitTests

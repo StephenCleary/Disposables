@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Nito.Disposables.Internals;
 
 namespace Nito.Disposables
 {
@@ -15,7 +16,7 @@ namespace Nito.Disposables
         /// <summary>
         /// The context. This is <c>null</c> if this instance has already been disposed (or is being disposed).
         /// </summary>
-        private ContextWrapper _context;
+        private BoundAction<T> _context;
 
         /// <summary>
         /// Creates a disposable for the specified context.
@@ -23,7 +24,7 @@ namespace Nito.Disposables
         /// <param name="context">The context passed to <see cref="Dispose(T)"/>.</param>
         protected SingleNonblockingDisposable(T context)
         {
-            _context = new ContextWrapper(context);
+            _context = new BoundAction<T>(Dispose, context);
         }
 
         /// <summary>
@@ -43,39 +44,12 @@ namespace Nito.Disposables
         /// <remarks>
         /// <para>If <see cref="Dispose()"/> is called multiple times, only the first call will execute the disposal code. Other calls to <see cref="Dispose()"/> will not wait for the disposal to complete.</para>
         /// </remarks>
-        public void Dispose()
-        {
-            var context = Interlocked.Exchange(ref _context, null);
-            if (context != null)
-                Dispose(context.Context);
-        }
+        public void Dispose() => BoundAction<T>.TryGetAndUnset(ref _context)?.Invoke();
 
         /// <summary>
         /// Attempts to update the stored context. This method returns <c>false</c> if this instance has already been disposed (or is being disposed).
         /// </summary>
         /// <param name="contextUpdater">The function used to update an existing context. This may be called more than once if more than one thread attempts to simultanously update the context.</param>
-        protected bool TryUpdateContext(Func<T, T> contextUpdater)
-        {
-            while (true)
-            {
-                var originalContext = Interlocked.CompareExchange(ref _context, _context, _context);
-                if (originalContext == null)
-                    return false;
-                var updatedContext = new ContextWrapper(contextUpdater(originalContext.Context));
-                var result = Interlocked.CompareExchange(ref _context, updatedContext, originalContext);
-                if (ReferenceEquals(originalContext, result))
-                    return true;
-            }
-        }
-
-        private sealed class ContextWrapper
-        {
-            public ContextWrapper(T context)
-            {
-                Context = context;
-            }
-
-            public T Context { get; }
-        }
+        protected bool TryUpdateContext(Func<T, T> contextUpdater) => BoundAction<T>.TryUpdateContext(ref _context, contextUpdater);
     }
 }
