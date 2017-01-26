@@ -6,6 +6,10 @@ using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
+// TODO:
+// Split into SingleDisposable + SingleNonblockingDisposable
+// Wrap context into a context + action class.
+
 namespace UnitTests
 {
     public class SingleDisposableUnitTests
@@ -35,6 +39,29 @@ namespace UnitTests
             disposable.Dispose();
             disposable.Dispose();
             Assert.Equal(1, counter);
+        }
+
+        [Fact]
+        public async Task DisposableWaitsForDisposeToComplete()
+        {
+            var ready = new ManualResetEventSlim();
+            var signal = new ManualResetEventSlim();
+            var disposable = new DelegateSingleDisposable<object>(new object(), _ =>
+            {
+                ready.Set();
+                signal.Wait();
+            });
+
+            var task1 = Task.Run(() => disposable.Dispose());
+            ready.Wait();
+
+            var task2 = Task.Run(() => disposable.Dispose());
+            var timer = Task.Delay(500);
+            Assert.Same(timer, await Task.WhenAny(task1, task2, timer));
+
+            signal.Set();
+            await task1;
+            await task2;
         }
 
         private sealed class DelegateSingleDisposable<T> : SingleDisposable<T>

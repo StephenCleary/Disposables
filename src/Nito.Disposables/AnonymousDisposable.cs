@@ -10,16 +10,14 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
-        /// <param name="dispose">The delegate to execute when disposed. May not be <c>null</c>.</param>
+        /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
         public AnonymousDisposable(Action dispose)
             : base(dispose)
         {
-            if (dispose == null)
-                throw new ArgumentNullException(nameof(dispose));
         }
 
         /// <inheritdoc />
-        protected override void Dispose(Action context) => context();
+        protected override void Dispose(Action context) => context?.Invoke();
 
         /// <summary>
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
