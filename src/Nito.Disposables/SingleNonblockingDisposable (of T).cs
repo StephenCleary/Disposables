@@ -14,9 +14,9 @@ namespace Nito.Disposables
     public abstract class SingleNonblockingDisposable<T> : IDisposable
     {
         /// <summary>
-        /// The context. This is <c>null</c> if this instance has already been disposed (or is being disposed).
+        /// The context. This is never <c>null</c>. This is empty if this instance has already been disposed (or is being disposed).
         /// </summary>
-        private BoundAction<T> _context;
+        private readonly BoundActionField<T> _context;
 
         /// <summary>
         /// Creates a disposable for the specified context.
@@ -24,13 +24,13 @@ namespace Nito.Disposables
         /// <param name="context">The context passed to <see cref="Dispose(T)"/>.</param>
         protected SingleNonblockingDisposable(T context)
         {
-            _context = new BoundAction<T>(Dispose, context);
+            _context = new BoundActionField<T>(Dispose, context);
         }
 
         /// <summary>
         /// Whether this instance has been disposed (or is being disposed).
         /// </summary>
-        public bool IsDisposed => _context == null;
+        public bool IsDisposed => _context.IsEmpty;
 
         /// <summary>
         /// The actul disposal method, called only once from <see cref="Dispose()"/>.
@@ -44,12 +44,12 @@ namespace Nito.Disposables
         /// <remarks>
         /// <para>If <see cref="Dispose()"/> is called multiple times, only the first call will execute the disposal code. Other calls to <see cref="Dispose()"/> will not wait for the disposal to complete.</para>
         /// </remarks>
-        public void Dispose() => BoundAction<T>.TryGetAndUnset(ref _context)?.Invoke();
+        public void Dispose() => _context.TryGetAndUnset()?.Invoke();
 
         /// <summary>
         /// Attempts to update the stored context. This method returns <c>false</c> if this instance has already been disposed (or is being disposed).
         /// </summary>
         /// <param name="contextUpdater">The function used to update an existing context. This may be called more than once if more than one thread attempts to simultanously update the context.</param>
-        protected bool TryUpdateContext(Func<T, T> contextUpdater) => BoundAction<T>.TryUpdateContext(ref _context, contextUpdater);
+        protected bool TryUpdateContext(Func<T, T> contextUpdater) => _context.TryUpdateContext(contextUpdater);
     }
 }

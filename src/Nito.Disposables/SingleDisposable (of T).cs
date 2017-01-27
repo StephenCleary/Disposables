@@ -14,9 +14,9 @@ namespace Nito.Disposables
     public abstract class SingleDisposable<T> : IDisposable
     {
         /// <summary>
-        /// The context. This is <c>null</c> if this instance has already been disposed (or is being disposed).
+        /// The context. This is never <c>null</c>. This is empty if this instance has already been disposed (or is being disposed).
         /// </summary>
-        private BoundAction<T> _context;
+        private readonly BoundActionField<T> _context;
 
         private readonly ManualResetEventSlim _mre = new ManualResetEventSlim();
 
@@ -26,18 +26,23 @@ namespace Nito.Disposables
         /// <param name="context">The context passed to <see cref="Dispose(T)"/>.</param>
         protected SingleDisposable(T context)
         {
-            _context = new BoundAction<T>(Dispose, context);
+            _context = new BoundActionField<T>(Dispose, context);
         }
 
         /// <summary>
-        /// Whether this instance has been disposed (or is being disposed).
+        /// Whether this instance is currently disposing or has been disposed.
         /// </summary>
-        public bool HasDisposeStarted => _context == null;
+        public bool IsDisposeStarted => _context.IsEmpty;
 
         /// <summary>
         /// Whether this instance is disposed (finished disposing).
         /// </summary>
         public bool IsDispoed => _mre.IsSet;
+
+        /// <summary>
+        /// Whether this instance is currently disposing, but not finished yet.
+        /// </summary>
+        public bool IsDisposing => IsDisposeStarted && !IsDispoed;
 
         /// <summary>
         /// The actul disposal method, called only once from <see cref="Dispose()"/>.
@@ -53,7 +58,7 @@ namespace Nito.Disposables
         /// </remarks>
         public void Dispose()
         {
-            var context = BoundAction<T>.TryGetAndUnset(ref _context);
+            var context = _context.TryGetAndUnset();
             if (context == null)
             {
                 _mre.Wait();
@@ -73,6 +78,6 @@ namespace Nito.Disposables
         /// Attempts to update the stored context. This method returns <c>false</c> if this instance has already been disposed (or is being disposed).
         /// </summary>
         /// <param name="contextUpdater">The function used to update an existing context. This may be called more than once if more than one thread attempts to simultanously update the context.</param>
-        protected bool TryUpdateContext(Func<T, T> contextUpdater) => BoundAction<T>.TryUpdateContext(ref _context, contextUpdater);
+        protected bool TryUpdateContext(Func<T, T> contextUpdater) => _context.TryUpdateContext(contextUpdater);
     }
 }

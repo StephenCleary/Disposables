@@ -8,7 +8,7 @@ using Xunit;
 
 namespace UnitTests
 {
-    public class SingleDisposableUnitTests
+    public class SingleNonblockingDisposableUnitTests
     {
         [Fact]
         public void ConstructedWithContext_DisposeReceivesThatContext()
@@ -31,7 +31,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task DisposableWaitsForDisposeToComplete()
+        public async Task DisposeIsNonblocking()
         {
             var ready = new ManualResetEventSlim();
             var signal = new ManualResetEventSlim();
@@ -46,14 +46,16 @@ namespace UnitTests
 
             var task2 = Task.Run(() => disposable.Dispose());
             var timer = Task.Delay(500);
-            Assert.Same(timer, await Task.WhenAny(task1, task2, timer));
+            Assert.Same(task2, await Task.WhenAny(task1, task2, timer));
+
+            Assert.Same(timer, await Task.WhenAny(task1, timer));
 
             signal.Set();
             await task1;
             await task2;
         }
 
-        private sealed class DelegateSingleDisposable<T> : SingleDisposable<T>
+        private sealed class DelegateSingleDisposable<T> : SingleNonblockingDisposable<T>
             where T : class
         {
             private readonly Action<T> _callback;
