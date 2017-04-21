@@ -44,15 +44,10 @@ namespace UnitTests
             var task1 = Task.Run(() => disposable.Dispose());
             ready.Wait();
 
-            var task2 = Task.Run(() => disposable.Dispose());
-            var timer = Task.Delay(500);
-            Assert.Same(task2, await Task.WhenAny(task1, task2, timer));
-
-            Assert.Same(timer, await Task.WhenAny(task1, timer));
+            await Task.Run(() => disposable.Dispose());
 
             signal.Set();
             await task1;
-            await task2;
         }
 
         private sealed class DelegateSingleDisposable<T> : SingleNonblockingDisposable<T>
