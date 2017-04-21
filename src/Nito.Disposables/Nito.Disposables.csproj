@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>IDisposable helper types.</Description>
-    <VersionPrefix>1.1.0</VersionPrefix>
+    <VersionPrefix>1.1.1</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Authors>Stephen Cleary</Authors>
     <TargetFramework>netstandard1.0</TargetFramework>
