@@ -2,24 +2,8 @@
 
   <PropertyGroup>
     <Description>IDisposable helper types.</Description>
-    <VersionPrefix>1.2.3</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
-    <Authors>Stephen Cleary</Authors>
     <TargetFrameworks>netstandard1.0;netstandard2.0</TargetFrameworks>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyName>Nito.Disposables</AssemblyName>
-    <PackageId>Nito.Disposables</PackageId>
-    <PackageTags>idisposable</PackageTags>
-    <PackageProjectUrl>https://github.com/StephenCleary/Disposables</PackageProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/StephenCleary/Disposables/master/LICENSE</PackageLicenseUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/StephenCleary/Disposables.git</RepositoryUrl>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>full</DebugType>
-    <DebugSymbols>True</DebugSymbols>
+    <PackageTags>idisposable,disposable</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

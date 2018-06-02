@@ -1,16 +1,16 @@
 version: '{build}'
 os: Visual Studio 2017
 configuration: Debug
-environment:
-  COVERALLS_REPO_TOKEN:
-    secure: NfWAXhcVkmUdz902pEde4V4XAU5Wd8Z8obpLUqw3kQSw7CWu1qOnZrKIA3Q1lzxt
 branches:
   only:
     - master
+before_build:
+- choco install codecov
 build_script:
-- ps: ./Build.ps1
+- dotnet pack -c Release
 test_script:
-- ps: ./Coverage.ps1
+- dotnet test -c Release .\test\UnitTests\
+- codecov -f coverage.xml
 artifacts:
   - path: '**\*.nupkg'
     name: NuGet Packages

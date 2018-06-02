@@ -8,9 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7B1B4561-CF9F-480A-A66B-D6DA6AF1C4FB}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
-		Build.ps1 = Build.ps1
-		Coverage.ps1 = Coverage.ps1
-		Version.ps1 = Version.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7EBA6ADD-9700-4C4C-A676-FF2A35CA8B50}"
@@ -40,5 +37,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0B6A4BE8-63D1-4447-A365-2FFEDCA75B52} = {9EE9E525-B5E5-4899-AA22-C2202EBE590A}
 		{FF538303-1B64-4499-9E49-390C580BF63F} = {7EBA6ADD-9700-4C4C-A676-FF2A35CA8B50}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B55F2581-3393-4ED7-A69E-608C61BA5ECF}
 	EndGlobalSection
 EndGlobal
