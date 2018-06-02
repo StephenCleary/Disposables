@@ -37,12 +37,12 @@ namespace Nito.Disposables
         /// <summary>
         /// Whether this instance is disposed (finished disposing).
         /// </summary>
-        public bool IsDispoed => _mre.IsSet;
+        public bool IsDisposed => _mre.IsSet;
 
         /// <summary>
         /// Whether this instance is currently disposing, but not finished yet.
         /// </summary>
-        public bool IsDisposing => IsDisposeStarted && !IsDispoed;
+        public bool IsDisposing => IsDisposeStarted && !IsDisposed;
 
         /// <summary>
         /// The actul disposal method, called only once from <see cref="Dispose()"/>.
