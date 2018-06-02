@@ -35,7 +35,7 @@ namespace Nito.Disposables
         }
 
         /// <summary>
-        /// Adds a disposable to the collection of disposables. If this instance is already disposed, then <paramref name="disposable"/> is disposed immediately.
+        /// Adds a disposable to the collection of disposables. If this instance is already disposed or disposing, then <paramref name="disposable"/> is disposed immediately.
         /// </summary>
         /// <param name="disposable">The disposable to add to our collection.</param>
         public void Add(IDisposable disposable)
