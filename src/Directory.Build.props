@@ -2,15 +2,20 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <SourceLinkCreate>true</SourceLinkCreate>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>Stephen Cleary</Authors>
     <PackageProjectUrl>https://github.com/StephenCleary/Disposables</PackageProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/StephenCleary/Disposables/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/StephenCleary/Disposables.git</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.0" PrivateAssets="All" /> 
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>
