@@ -1,9 +1,7 @@
 version: '{build}'
 image: Visual Studio 2019 Preview
 configuration: Debug
-branches:
-  only:
-    - master
+skip_branch_with_pr: true
 before_build:
 - choco install codecov
 - choco install dotnetcore-sdk --pre
@@ -15,6 +13,8 @@ test_script:
 artifacts:
   - path: '**\*.nupkg'
     name: NuGet Packages
+  - path: '**\*.snupkg'
+    name: NuGet Symbol Packages
 deploy:
   provider: NuGet
   api_key:
