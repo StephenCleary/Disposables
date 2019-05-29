@@ -6,6 +6,7 @@ branches:
     - master
 before_build:
 - choco install codecov
+- choco install dotnetcore-sdk --pre
 build_script:
 - dotnet pack -c Release
 test_script:
