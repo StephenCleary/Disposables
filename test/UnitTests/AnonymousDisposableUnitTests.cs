@@ -38,6 +38,16 @@ namespace UnitTests
         }
 
         [Fact]
+        public void Dispose_AfterAddingNull_DoesNotThrow()
+        {
+            bool action1Invoked = false;
+            var disposable = AnonymousDisposable.Create(() => { action1Invoked = true; });
+            disposable.Add(null);
+            disposable.Dispose();
+            Assert.True(action1Invoked);
+        }
+
+        [Fact]
         public async Task Add_AfterDisposeStarts_InvokesActionImmediately()
         {
             bool action1Invoked = false;
