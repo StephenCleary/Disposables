@@ -19,6 +19,28 @@ namespace UnitTests
         }
 
         [Fact]
+        public void Dispose_MultipleChildren_DisposesBothChildren()
+        {
+            bool action1Invoked = false;
+            bool action2Invoked = false;
+            var disposable = CollectionDisposable.Create(new AnonymousDisposable(() => { action1Invoked = true; }), new AnonymousDisposable(() => { action2Invoked = true; }));
+            disposable.Dispose();
+            Assert.True(action1Invoked);
+            Assert.True(action2Invoked);
+        }
+
+        [Fact]
+        public void Dispose_EnumerableChildren_DisposesAllChildren()
+        {
+            var action1Invoked = new BoolHolder();
+            var action2Invoked = new BoolHolder();
+            var disposable = CollectionDisposable.Create(new[] { action1Invoked, action2Invoked }.Select(bh => new AnonymousDisposable(() => { bh.Value = true; })));
+            disposable.Dispose();
+            Assert.True(action1Invoked.Value);
+            Assert.True(action2Invoked.Value);
+        }
+
+        [Fact]
         public void Dispose_AfterAdd_DisposesBothChildren()
         {
             bool action1Invoked = false;
@@ -62,6 +84,11 @@ namespace UnitTests
             disposable.Dispose();
             disposable.Dispose();
             Assert.Equal(1, counter);
+        }
+
+        private sealed class BoolHolder
+        {
+            public bool Value { get; set; }
         }
     }
 }
