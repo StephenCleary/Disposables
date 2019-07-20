@@ -50,6 +50,31 @@ namespace UnitTests
             await task1;
         }
 
+        [Fact]
+        public async Task LifetimeProperties_HaveAppropriateValues()
+        {
+            var ready = new ManualResetEventSlim();
+            var signal = new ManualResetEventSlim();
+            var disposable = new DelegateSingleDisposable<object>(new object(), _ =>
+            {
+                ready.Set();
+                signal.Wait();
+            });
+
+            Assert.False(disposable.IsDisposed);
+
+            var task1 = Task.Run(() => disposable.Dispose());
+            ready.Wait();
+
+            // Note: IsDisposed is true once disposal starts.
+            Assert.True(disposable.IsDisposed);
+
+            signal.Set();
+            await task1;
+
+            Assert.True(disposable.IsDisposed);
+        }
+
         private sealed class DelegateSingleDisposable<T> : SingleNonblockingDisposable<T>
             where T : class
         {
