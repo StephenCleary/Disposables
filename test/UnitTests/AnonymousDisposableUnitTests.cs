@@ -10,10 +10,17 @@ namespace UnitTests
     public class AnonymousDisposableUnitTests
     {
         [Fact]
+        public void Dispose_NullAction_DoesNotThrow()
+        {
+            var disposable = AnonymousDisposable.Create(null);
+            disposable.Dispose();
+        }
+
+        [Fact]
         public void Dispose_InvokesAction()
         {
             bool actionInvoked = false;
-            var disposable = new AnonymousDisposable(() => { actionInvoked = true; });
+            var disposable = AnonymousDisposable.Create(() => { actionInvoked = true; });
             disposable.Dispose();
             Assert.True(actionInvoked);
         }
@@ -23,7 +30,7 @@ namespace UnitTests
         {
             bool action1Invoked = false;
             bool action2Invoked = false;
-            var disposable = new AnonymousDisposable(() => { action1Invoked = true; });
+            var disposable = AnonymousDisposable.Create(() => { action1Invoked = true; });
             disposable.Add(() => { action2Invoked = true; });
             disposable.Dispose();
             Assert.True(action1Invoked);
@@ -37,7 +44,7 @@ namespace UnitTests
             bool action2Invoked = false;
             var ready = new ManualResetEventSlim();
             var signal = new ManualResetEventSlim();
-            var disposable = new AnonymousDisposable(() =>
+            var disposable = AnonymousDisposable.Create(() =>
             {
                 ready.Set();
                 signal.Wait();
@@ -57,7 +64,7 @@ namespace UnitTests
         public void MultipleDispose_OnlyInvokesActionOnce()
         {
             var counter = 0;
-            var disposable = new AnonymousDisposable(() => { ++counter; });
+            var disposable = AnonymousDisposable.Create(() => { ++counter; });
             disposable.Dispose();
             disposable.Dispose();
             Assert.Equal(1, counter);
