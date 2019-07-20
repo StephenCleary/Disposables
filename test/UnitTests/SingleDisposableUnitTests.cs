@@ -35,7 +35,31 @@ namespace UnitTests
         }
 
         [Fact]
-        public void TryUpdateContext_AfterDispose_ReturnsFalse()
+        public async Task TryUpdateContext_AfterDisposeStarts_ReturnsFalse()
+        {
+            var originalContext = new object();
+            var updatedContext = new object();
+            object contextPassedToDispose = null;
+            bool tryUpdateContextDelegateCalled = false;
+            var ready = new ManualResetEventSlim();
+            var signal = new ManualResetEventSlim();
+            var disposable = new DelegateSingleDisposable<object>(originalContext, context =>
+            {
+                ready.Set();
+                signal.Wait();
+                contextPassedToDispose = context;
+            });
+            var task = Task.Run(() => disposable.Dispose());
+            ready.Wait();
+            Assert.False(disposable.TryUpdateContext(context => { tryUpdateContextDelegateCalled = true; return updatedContext; }));
+            signal.Set();
+            await task;
+            Assert.False(tryUpdateContextDelegateCalled);
+            Assert.Same(originalContext, contextPassedToDispose);
+        }
+
+        [Fact]
+        public void TryUpdateContext_AfterDisposeCompletes_ReturnsFalse()
         {
             var originalContext = new object();
             var updatedContext = new object();
