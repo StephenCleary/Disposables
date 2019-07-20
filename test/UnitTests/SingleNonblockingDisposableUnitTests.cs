@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Nito.Disposables;
 using System.Linq;
 using System.Threading;
-using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 namespace UnitTests
