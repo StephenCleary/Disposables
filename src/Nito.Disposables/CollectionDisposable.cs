@@ -40,6 +40,7 @@ namespace Nito.Disposables
         /// <param name="disposable">The disposable to add to our collection.</param>
         public void Add(IDisposable disposable)
         {
+            _ = disposable ?? throw new ArgumentNullException(nameof(disposable));
             if (!TryUpdateContext(x => x.Enqueue(disposable)))
                 disposable.Dispose();
         }

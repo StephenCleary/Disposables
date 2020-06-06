@@ -11,7 +11,7 @@ namespace Nito.Disposables.Internals
     /// <typeparam name="T">The type of context for the action.</typeparam>
     public sealed class BoundActionField<T>
     {
-        private BoundAction field;
+        private BoundAction? _field;
 
         /// <summary>
         /// Initializes the field with the specified action and context.
@@ -20,20 +20,20 @@ namespace Nito.Disposables.Internals
         /// <param name="context">The context.</param>
         public BoundActionField(Action<T> action, T context)
         {
-            field = new BoundAction(action, context);
+            _field = new BoundAction(action, context);
         }
 
         /// <summary>
         /// Whether the field is empty.
         /// </summary>
-        public bool IsEmpty => Interlocked.CompareExchange(ref field, null, null) == null;
+        public bool IsEmpty => Interlocked.CompareExchange(ref _field, null, null) == null;
 
         /// <summary>
         /// Atomically retrieves the bound action from the field and sets the field to <c>null</c>. May return <c>null</c>.
         /// </summary>
-        public IBoundAction TryGetAndUnset()
+        public IBoundAction? TryGetAndUnset()
         {
-            return Interlocked.Exchange(ref field, null);
+            return Interlocked.Exchange(ref _field, null);
         }
 
         /// <summary>
@@ -44,11 +44,11 @@ namespace Nito.Disposables.Internals
         {
             while (true)
             {
-                var original = Interlocked.CompareExchange(ref field, field, field);
+                var original = Interlocked.CompareExchange(ref _field, _field, _field);
                 if (original == null)
                     return false;
                 var updatedContext = new BoundAction(original, contextUpdater);
-                var result = Interlocked.CompareExchange(ref field, updatedContext, original);
+                var result = Interlocked.CompareExchange(ref _field, updatedContext, original);
                 if (ReferenceEquals(original, result))
                     return true;
             }

@@ -1,0 +1,10 @@
+[*.cs]
+
+# CA1063: Implement IDisposable correctly
+dotnet_diagnostic.CA1063.severity = silent
+
+# CA1034: Nested types should not be visible
+dotnet_diagnostic.CA1034.severity = silent
+
+# CA1816: Call GC.SuppressFinalize correctly
+dotnet_diagnostic.CA1816.severity = silent

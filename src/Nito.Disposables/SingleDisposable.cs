@@ -18,12 +18,14 @@ namespace Nito.Disposables
         /// </summary>
         private readonly BoundActionField<T> _context;
 
+#pragma warning disable CA2213 // Disposable fields should be disposed
         private readonly ManualResetEventSlim _mre = new ManualResetEventSlim();
+#pragma warning restore CA2213 // Disposable fields should be disposed
 
         /// <summary>
         /// Creates a disposable for the specified context.
         /// </summary>
-        /// <param name="context">The context passed to <see cref="Dispose(T)"/>.</param>
+        /// <param name="context">The context passed to <see cref="Dispose(T)"/>. May be <c>null</c>.</param>
         protected SingleDisposable(T context)
         {
             _context = new BoundActionField<T>(Dispose, context);

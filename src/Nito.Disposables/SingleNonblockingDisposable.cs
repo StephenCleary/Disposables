@@ -20,7 +20,7 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a disposable for the specified context.
         /// </summary>
-        /// <param name="context">The context passed to <see cref="Dispose(T)"/>.</param>
+        /// <param name="context">The context passed to <see cref="Dispose(T)"/>. May be <c>null</c>.</param>
         protected SingleNonblockingDisposable(T context)
         {
             _context = new BoundActionField<T>(Dispose, context);

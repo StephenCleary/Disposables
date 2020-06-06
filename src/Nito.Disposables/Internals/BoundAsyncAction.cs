@@ -13,7 +13,7 @@ namespace Nito.Disposables.Internals
     /// <typeparam name="T">The type of context for the action.</typeparam>
     public sealed class BoundAsyncActionField<T>
     {
-        private BoundAction field;
+        private BoundAction? field;
 
         /// <summary>
         /// Initializes the field with the specified action and context.
