@@ -1,6 +1,7 @@
 ﻿#if NETSTANDARD2_1
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,29 +14,29 @@ namespace Nito.Disposables.Internals
     /// <typeparam name="T">The type of context for the action.</typeparam>
     public sealed class BoundAsyncActionField<T>
     {
-        private BoundAction? field;
+        private BoundAction? _field;
 
         /// <summary>
         /// Initializes the field with the specified action and context.
         /// </summary>
         /// <param name="action">The action delegate.</param>
         /// <param name="context">The context.</param>
-        public BoundAsyncActionField(Func<T, ValueTask> action, T context)
+        public BoundAsyncActionField(Func<T, ValueTask> action, [AllowNull] T context)
         {
-            field = new BoundAction(action, context);
+            _field = new BoundAction(action, context);
         }
 
         /// <summary>
         /// Whether the field is empty.
         /// </summary>
-        public bool IsEmpty => Interlocked.CompareExchange(ref field, null, null) == null;
+        public bool IsEmpty => Interlocked.CompareExchange(ref _field, null, null) == null;
 
         /// <summary>
         /// Atomically retrieves the bound action from the field and sets the field to <c>null</c>. May return <c>null</c>.
         /// </summary>
-        public IBoundAction TryGetAndUnset()
+        public IBoundAction? TryGetAndUnset()
         {
-            return Interlocked.Exchange(ref field, null);
+            return Interlocked.Exchange(ref _field, null);
         }
 
         /// <summary>
@@ -46,11 +47,11 @@ namespace Nito.Disposables.Internals
         {
             while (true)
             {
-                var original = Interlocked.CompareExchange(ref field, field, field);
+                var original = Interlocked.CompareExchange(ref _field, _field, _field);
                 if (original == null)
                     return false;
                 var updatedContext = new BoundAction(original, contextUpdater);
-                var result = Interlocked.CompareExchange(ref field, updatedContext, original);
+                var result = Interlocked.CompareExchange(ref _field, updatedContext, original);
                 if (ReferenceEquals(original, result))
                     return true;
             }
@@ -69,10 +70,10 @@ namespace Nito.Disposables.Internals
 
         private sealed class BoundAction : IBoundAction
         {
-            private readonly Func<T, ValueTask> _action;
-            private readonly T _context;
+            private readonly Func<T, ValueTask>? _action;
+            [AllowNull] private readonly T _context;
 
-            public BoundAction(Func<T, ValueTask> action, T context)
+            public BoundAction(Func<T, ValueTask>? action, [AllowNull] T context)
             {
                 _action = action;
                 _context = context;

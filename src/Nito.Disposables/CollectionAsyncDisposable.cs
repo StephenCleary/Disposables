@@ -64,6 +64,7 @@ namespace Nito.Disposables
         /// <param name="disposable">The disposable to add to our collection.</param>
         public ValueTask AddAsync(IAsyncDisposable disposable)
         {
+            _ = disposable ?? throw new ArgumentNullException(nameof(disposable));
             if (TryUpdateContext(x => x.Enqueue(disposable)))
                 return new ValueTask();
             return disposable.DisposeAsync();
