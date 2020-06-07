@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Nito.Disposables.Internals;
 
 namespace Nito.Disposables
@@ -18,9 +19,7 @@ namespace Nito.Disposables
         /// </summary>
         private readonly BoundActionField<T> _context;
 
-#pragma warning disable CA2213 // Disposable fields should be disposed
-        private readonly ManualResetEventSlim _mre = new ManualResetEventSlim();
-#pragma warning restore CA2213 // Disposable fields should be disposed
+        private readonly TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>(TaskCreationOptions.DenyChildAttach);
 
         /// <summary>
         /// Creates a disposable for the specified context.
@@ -39,7 +38,7 @@ namespace Nito.Disposables
         /// <summary>
         /// Whether this instance is disposed (finished disposing).
         /// </summary>
-        public bool IsDisposed => _mre.IsSet;
+        public bool IsDisposed => _tcs.Task.IsCompleted;
 
         /// <summary>
         /// Whether this instance is currently disposing, but not finished yet.
@@ -63,7 +62,7 @@ namespace Nito.Disposables
             var context = _context.TryGetAndUnset();
             if (context == null)
             {
-                _mre.Wait();
+                _tcs.Task.GetAwaiter().GetResult();
                 return;
             }
             try
@@ -72,7 +71,7 @@ namespace Nito.Disposables
             }
             finally
             {
-                _mre.Set();
+                _tcs.TrySetResult(null!);
             }
         }
 
