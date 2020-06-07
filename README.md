@@ -11,6 +11,8 @@ You can create an `AnonymousDisposable` by calling `AnonymousDisposable.Create(A
 
 `AsyncAnonymousDisposable` is exactly the same as `AnonymousDisposable` except it wraps a `Func<Task>`.
 
+If the `Action` (or `Func<Task>`) throws an exception, only the first caller of `Dispose` (or `DisposeAsync`) will observe the exception. All other calls to `Dispose` / `DisposeAsync` will wait for the delegate to complete, but they will not observe the exception.
+
 ### Advanced
 
 You can append an `Action` to an `AnonymousDisposable` by calling its `Add` method with the `Action` to add. If the `AnonymousDisposable` is already disposed (or is in the process of being disposed by another thread), then the additional `Action` is invoked immediately.
@@ -29,6 +31,10 @@ You can also append a disposable to the `CollectionDisposable` by calling its `A
 
 By default, all `IAsyncDisposable` instances are disposed concurrently, but you can change this to serial by creating the `AsyncCollectionDisposable` instance with the `AsyncDisposeFlags.ExecuteSerially` flag.
 
+### Fixing Other Disposables
+
+`CollectionDisposable` can be used as a wrapper to enforce only-dispose-once semantics on another disposable. If a type `IncorrectDisposable` has a `Dispose` method that breaks if it is called more than once, then `CollectionDisposable.Create(incorrectDisposable)` returns an `IDisposable` that will only invoke `IncorrectDisposable.Dispose` a single time, regardless of how many times you call `CollectionDisposable.Dispose`.
+
 ## NoopDisposable
 
 A type implementing both `IDisposable` and `IAsyncDisposable` that does nothing when disposed.
@@ -46,6 +52,8 @@ The type `T` is an immutable type that represents the contextual state of the in
 When the base type invokes `Dispose(T)`, your derived type should perform whatever disposing logic it needs to.
 
 `AsyncSingleDisposable<T>` is exactly the same as `SingleDisposable<T>` except that it implements `IAsyncDisposable` instead of `IDisposable`.
+
+If `Dispose(T)` (or `DisposeAsync(T)`) throws an exception, only the first caller of `Dispose` (or `DisposeAsync`) will observe the exception. All other calls to `Dispose` / `DisposeAsync` will wait for the delegate to complete, but they will not observe the exception.
 
 ## SingleNonblockingDisposable&lt;T&gt;
 

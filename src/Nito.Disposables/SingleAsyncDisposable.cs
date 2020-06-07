@@ -71,7 +71,6 @@ namespace Nito.Disposables
             }
             finally
             {
-                // TODO: document that exceptions are only observed by one disposer, not all.
                 _tcs.TrySetResult(null!);
             }
         }

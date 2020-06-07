@@ -75,7 +75,6 @@ namespace UnitTests
             Assert.True(action1Invoked);
         }
 
-        // TODO: document that CollectionDisposable can be used to fix "can only be disposed once" types.
         [Fact]
         public void MultipleDispose_OnlyDisposesChildOnce()
         {
