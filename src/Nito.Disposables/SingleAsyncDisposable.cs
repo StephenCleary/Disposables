@@ -19,7 +19,7 @@ namespace Nito.Disposables
         /// </summary>
         private readonly BoundAsyncActionField<T> _context;
 
-        private readonly TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>(TaskCreationOptions.DenyChildAttach);
+        private readonly TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>();
 
         /// <summary>
         /// Creates a disposable for the specified context.
