@@ -62,12 +62,16 @@ namespace Nito.Disposables
         /// Adds a disposable to the collection of disposables. If this instance is already disposed or disposing, then <paramref name="disposable"/> is disposed immediately.
         /// </summary>
         /// <param name="disposable">The disposable to add to our collection. May not be <c>null</c>.</param>
-        public ValueTask AddAsync(IAsyncDisposable disposable)
+        public async ValueTask AddAsync(IAsyncDisposable disposable)
         {
             _ = disposable ?? throw new ArgumentNullException(nameof(disposable));
             if (TryUpdateContext(x => x.Enqueue(disposable)))
-                return new ValueTask();
-            return disposable.DisposeAsync();
+                return;
+
+            // If we are executing serially, wait for our disposal to complete; then dispose the additional item.
+            if ((_flags & AsyncDisposeFlags.ExecuteSerially) == AsyncDisposeFlags.ExecuteSerially)
+                await DisposeAsync().ConfigureAwait(false);
+            await disposable.DisposeAsync().ConfigureAwait(false); // TODO: ensure these are serial as well.
         }
 
         /// <summary>

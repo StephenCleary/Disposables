@@ -27,8 +27,12 @@ namespace Nito.Disposables
         {
             if (dispose == null)
                 return;
-            if (!TryUpdateContext(x => x + dispose))
-                dispose();
+            if (TryUpdateContext(x => x + dispose))
+                return;
+
+            // Wait for our disposal to complete; then call the additional delegate.
+            Dispose();
+            dispose(); // TODO: ensure these are serial as well.
         }
 
         /// <summary>

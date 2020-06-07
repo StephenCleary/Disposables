@@ -41,8 +41,12 @@ namespace Nito.Disposables
         public void Add(IDisposable disposable)
         {
             _ = disposable ?? throw new ArgumentNullException(nameof(disposable));
-            if (!TryUpdateContext(x => x.Enqueue(disposable)))
-                disposable.Dispose();
+            if (TryUpdateContext(x => x.Enqueue(disposable)))
+                return;
+
+            // Wait for our disposal to complete; then dispose the additional item.
+            Dispose();
+            disposable.Dispose(); // TODO: ensure these are serial as well.
         }
 
         /// <summary>

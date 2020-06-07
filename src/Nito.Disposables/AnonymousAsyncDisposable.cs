@@ -64,13 +64,17 @@ namespace Nito.Disposables
         /// Adds a delegate to be executed when this instance is disposed. If this instance is already disposed or disposing, then <paramref name="dispose"/> is executed immediately.
         /// </summary>
         /// <param name="dispose">The delegate to add. May be <c>null</c> to indicate no additional action.</param>
-        public ValueTask AddAsync(Func<ValueTask>? dispose)
+        public async ValueTask AddAsync(Func<ValueTask>? dispose)
         {
             if (dispose == null)
-                return new ValueTask();
+                return;
             if (TryUpdateContext(x => x + dispose))
-                return new ValueTask();
-            return dispose();
+                return;
+
+            // If we are executing serially, wait for our disposal to complete; then call the additional delegate.
+            if ((_flags & AsyncDisposeFlags.ExecuteSerially) == AsyncDisposeFlags.ExecuteSerially)
+                await DisposeAsync().ConfigureAwait(false);
+            await dispose().ConfigureAwait(false); // TODO: ensure these are serial as well.
         }
 
         /// <summary>
