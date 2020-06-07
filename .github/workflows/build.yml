@@ -38,7 +38,7 @@ jobs:
     - name: Build
       run: |
         dotnet build --configuration Release
-        dotnet test --configuration Release --no-build
+        dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage"
         dotnet pack --configuration Release --no-build
 
     - name: Upload artifacts
@@ -48,6 +48,9 @@ jobs:
         path: |
           **/*.nupkg
           **/*.snupkg
+
+    - name: Upload code coverage
+      uses: codecov/codecov-action@v1
 
     - name: Publish
       run: |
