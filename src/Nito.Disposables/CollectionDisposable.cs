@@ -36,6 +36,7 @@ namespace Nito.Disposables
 
         /// <summary>
         /// Adds a disposable to the collection of disposables. If this instance is already disposed or disposing, then <paramref name="disposable"/> is disposed immediately.
+        /// If this method is called multiple times concurrently at the same time this instance is disposed, then the different <paramref name="disposable"/> arguments may be disposed concurrently.
         /// </summary>
         /// <param name="disposable">The disposable to add to our collection. May not be <c>null</c>.</param>
         public void Add(IDisposable disposable)
@@ -46,7 +47,7 @@ namespace Nito.Disposables
 
             // Wait for our disposal to complete; then dispose the additional item.
             Dispose();
-            disposable.Dispose(); // TODO: ensure these are serial as well.
+            disposable.Dispose();
         }
 
         /// <summary>

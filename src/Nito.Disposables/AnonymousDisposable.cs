@@ -7,6 +7,8 @@ namespace Nito.Disposables
     /// </summary>
     public sealed class AnonymousDisposable : SingleDisposable<Action>
     {
+        private object _mutex = new object();
+
         /// <summary>
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
@@ -21,6 +23,7 @@ namespace Nito.Disposables
 
         /// <summary>
         /// Adds a delegate to be executed when this instance is disposed. If this instance is already disposed or disposing, then <paramref name="dispose"/> is executed immediately.
+        /// If this method is called multiple times concurrently at the same time this instance is disposed, then the different <paramref name="dispose"/> arguments may be disposed concurrently.
         /// </summary>
         /// <param name="dispose">The delegate to add. May be <c>null</c> to indicate no additional action.</param>
         public void Add(Action? dispose)
@@ -32,7 +35,7 @@ namespace Nito.Disposables
 
             // Wait for our disposal to complete; then call the additional delegate.
             Dispose();
-            dispose(); // TODO: ensure these are serial as well.
+            dispose();
         }
 
         /// <summary>
