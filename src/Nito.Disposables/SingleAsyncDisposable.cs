@@ -67,12 +67,12 @@ namespace Nito.Disposables
             }
             try
             {
-                await context.InvokeAsync();
+                await context.InvokeAsync().ConfigureAwait(false);
             }
             finally
             {
                 // TODO: document that exceptions are only observed by one disposer, not all.
-                _tcs.TrySetResult(null);
+                _tcs.TrySetResult(null!);
             }
         }
 

@@ -8,6 +8,7 @@ namespace Nito.Disposables
     /// <summary>
     /// Flags to control asynchronous disposal.
     /// </summary>
+    [Flags]
     public enum AsyncDisposeFlags
     {
         /// <summary>
