@@ -17,7 +17,7 @@ namespace Nito.Disposables
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
-        public AnonymousAsyncDisposable(Func<ValueTask> dispose)
+        public AnonymousAsyncDisposable(Func<ValueTask>? dispose)
             : this(dispose, AsyncDisposeFlags.ExecuteConcurrently)
         {
         }
@@ -27,14 +27,14 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
         /// <param name="flags">Flags that control how asynchronous disposal is handled.</param>
-        public AnonymousAsyncDisposable(Func<ValueTask> dispose, AsyncDisposeFlags flags)
-            : base(dispose)
+        public AnonymousAsyncDisposable(Func<ValueTask>? dispose, AsyncDisposeFlags flags)
+            : base(dispose!)
         {
             _flags = flags;
         }
 
         /// <inheritdoc />
-        protected override ValueTask DisposeAsync(Func<ValueTask> context)
+        protected override ValueTask DisposeAsync(Func<ValueTask>? context)
         {
             if (context == null)
                 return new ValueTask();
@@ -64,7 +64,7 @@ namespace Nito.Disposables
         /// Adds a delegate to be executed when this instance is disposed. If this instance is already disposed or disposing, then <paramref name="dispose"/> is executed immediately.
         /// </summary>
         /// <param name="dispose">The delegate to add. May be <c>null</c> to indicate no additional action.</param>
-        public ValueTask AddAsync(Func<ValueTask> dispose)
+        public ValueTask AddAsync(Func<ValueTask>? dispose)
         {
             if (dispose == null)
                 return new ValueTask();
@@ -76,8 +76,8 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
-        /// <param name="dispose">The delegate to execute when disposed. May not be <c>null</c>.</param>
-        public static AnonymousAsyncDisposable Create(Func<ValueTask> dispose) => new AnonymousAsyncDisposable(dispose);
+        /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
+        public static AnonymousAsyncDisposable Create(Func<ValueTask>? dispose) => new AnonymousAsyncDisposable(dispose);
     }
 }
 #endif

@@ -17,7 +17,7 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
-        /// <param name="disposables">The disposables to dispose.</param>
+        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
         public CollectionAsyncDisposable(params IAsyncDisposable[] disposables)
             : this(disposables, AsyncDisposeFlags.ExecuteConcurrently)
         {
@@ -26,7 +26,7 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
-        /// <param name="disposables">The disposables to dispose.</param>
+        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
         public CollectionAsyncDisposable(IEnumerable<IAsyncDisposable> disposables)
             : this(disposables, AsyncDisposeFlags.ExecuteConcurrently)
         {
@@ -35,7 +35,7 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
-        /// <param name="disposables">The disposables to dispose.</param>
+        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
         /// <param name="flags">Flags that control how asynchronous disposal is handled.</param>
         public CollectionAsyncDisposable(IEnumerable<IAsyncDisposable> disposables, AsyncDisposeFlags flags)
             : base(ImmutableQueue.CreateRange(disposables))
@@ -61,7 +61,7 @@ namespace Nito.Disposables
         /// <summary>
         /// Adds a disposable to the collection of disposables. If this instance is already disposed or disposing, then <paramref name="disposable"/> is disposed immediately.
         /// </summary>
-        /// <param name="disposable">The disposable to add to our collection.</param>
+        /// <param name="disposable">The disposable to add to our collection. May not be <c>null</c>.</param>
         public ValueTask AddAsync(IAsyncDisposable disposable)
         {
             _ = disposable ?? throw new ArgumentNullException(nameof(disposable));
@@ -73,13 +73,13 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
-        /// <param name="disposables">The disposables to dispose.</param>
+        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
         public static CollectionDisposable Create(params IDisposable[] disposables) => new CollectionDisposable(disposables);
 
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
-        /// <param name="disposables">The disposables to dispose.</param>
+        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
         public static CollectionDisposable Create(IEnumerable<IDisposable> disposables) => new CollectionDisposable(disposables);
     }
 }

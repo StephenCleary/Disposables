@@ -17,7 +17,7 @@ namespace Nito.Disposables
         }
 
         /// <inheritdoc />
-        protected override void Dispose(Action context) => context?.Invoke();
+        protected override void Dispose(Action? context) => context?.Invoke();
 
         /// <summary>
         /// Adds a delegate to be executed when this instance is disposed. If this instance is already disposed or disposing, then <paramref name="dispose"/> is executed immediately.
@@ -34,7 +34,7 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
-        /// <param name="dispose">The delegate to execute when disposed. May not be <c>null</c>.</param>
-        public static AnonymousDisposable Create(Action dispose) => new AnonymousDisposable(dispose);
+        /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
+        public static AnonymousDisposable Create(Action? dispose) => new AnonymousDisposable(dispose);
     }
 }
