@@ -4,7 +4,7 @@ using Nito.Disposables.Internals;
 namespace Nito.Disposables
 {
     /// <summary>
-    /// A base class for disposables that need exactly-once semantics in a threadsafe way.
+    /// A base class for disposables that need exactly-once semantics in a thread-safe way.
     /// </summary>
     /// <typeparam name="T">The type of "context" for the derived disposable. Since the context should not be modified, strongly consider making this an immutable type.</typeparam>
     /// <remarks>
@@ -48,7 +48,7 @@ namespace Nito.Disposables
         /// <summary>
         /// Attempts to update the stored context. This method returns <c>false</c> if this instance has already been disposed (or is being disposed).
         /// </summary>
-        /// <param name="contextUpdater">The function used to update an existing context. This may be called more than once if more than one thread attempts to simultanously update the context.</param>
+        /// <param name="contextUpdater">The function used to update an existing context. This may be called more than once if more than one thread attempts to simultaneously update the context.</param>
         protected bool TryUpdateContext(Func<T, T> contextUpdater) => _context.TryUpdateContext(contextUpdater);
     }
 }
