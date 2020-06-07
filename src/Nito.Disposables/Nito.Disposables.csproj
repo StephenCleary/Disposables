@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>IDisposable and IAsyncDisposable helper types.</Description>
     <TargetFrameworks>netstandard1.0;netstandard2.0;netstandard2.1;net461</TargetFrameworks>
-    <PackageTags>idisposable,iasyncidsposable,disposable</PackageTags>
+    <PackageTags>idisposable,iasyncdisposable,disposable</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
