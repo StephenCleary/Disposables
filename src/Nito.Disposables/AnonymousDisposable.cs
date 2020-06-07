@@ -11,8 +11,8 @@ namespace Nito.Disposables
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
-        public AnonymousDisposable(Action dispose)
-            : base(dispose)
+        public AnonymousDisposable(Action? dispose)
+            : base(dispose!)
         {
         }
 
@@ -23,7 +23,7 @@ namespace Nito.Disposables
         /// Adds a delegate to be executed when this instance is disposed. If this instance is already disposed or disposing, then <paramref name="dispose"/> is executed immediately.
         /// </summary>
         /// <param name="dispose">The delegate to add. May be <c>null</c> to indicate no additional action.</param>
-        public void Add(Action dispose)
+        public void Add(Action? dispose)
         {
             if (dispose == null)
                 return;
