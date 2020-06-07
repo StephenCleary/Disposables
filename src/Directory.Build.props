@@ -47,6 +47,11 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
   </ItemGroup>
 
+  <!-- Include reference assemblies -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All"/>
+  </ItemGroup>
+
   <!-- Versioning -->
   <PropertyGroup Condition="'$(CI)'!='true'">
     <VersionSuffix>dev</VersionSuffix>
