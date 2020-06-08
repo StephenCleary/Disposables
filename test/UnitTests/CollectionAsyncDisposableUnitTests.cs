@@ -53,6 +53,19 @@ namespace UnitTests
         }
 
         [Fact]
+        public async Task AllowsMixedChildren()
+        {
+            bool action1Invoked = false;
+            bool action2Invoked = false;
+            var disposable = CollectionAsyncDisposable.Create(
+                new AnonymousAsyncDisposable(async () => { action1Invoked = true; }),
+                AnonymousDisposable.Create(() => action2Invoked = true).ToAsyncDisposable());
+            await disposable.DisposeAsync();
+            Assert.True(action1Invoked);
+            Assert.True(action2Invoked);
+        }
+
+        [Fact]
         public async Task Add_AfterDisposeStarts_ExecutingInParallel_InvokesActionImmediately()
         {
             bool action1Invoked = false;

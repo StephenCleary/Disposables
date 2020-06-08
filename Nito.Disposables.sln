@@ -5,11 +5,6 @@ VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9EE9E525-B5E5-4899-AA22-C2202EBE590A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7B1B4561-CF9F-480A-A66B-D6DA6AF1C4FB}"
-	ProjectSection(SolutionItems) = preProject
-		Directory.Build.props = Directory.Build.props
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7EBA6ADD-9700-4C4C-A676-FF2A35CA8B50}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nito.Disposables", "src\Nito.Disposables\Nito.Disposables.csproj", "{0B6A4BE8-63D1-4447-A365-2FFEDCA75B52}"
