@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading;
 using Xunit;
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+
 namespace UnitTests
 {
     public class CollectionAsyncDisposableUnitTests
