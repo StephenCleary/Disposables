@@ -7,8 +7,6 @@ namespace Nito.Disposables
     /// </summary>
     public sealed class AnonymousDisposable : SingleDisposable<Action>
     {
-        private object _mutex = new object();
-
         /// <summary>
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
