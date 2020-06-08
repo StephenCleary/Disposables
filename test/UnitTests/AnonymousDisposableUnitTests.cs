@@ -48,7 +48,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task Add_AfterDisposeStarts_InvokesActionImmediately()
+        public async Task Add_AfterDisposeStarts_InvokesActionAfterDisposeCompletes()
         {
             bool action1Invoked = false;
             bool action2Invoked = false;
@@ -56,18 +56,20 @@ namespace UnitTests
             var signal = new ManualResetEventSlim();
             var disposable = AnonymousDisposable.Create(() =>
             {
+                action1Invoked = true;
                 ready.Set();
                 signal.Wait();
-                action1Invoked = true;
             });
-            var task = Task.Run(() => disposable.Dispose());
+            var disposeTask = Task.Run(() => disposable.Dispose());
             ready.Wait();
-            disposable.Add(() => { action2Invoked = true; });
-            Assert.False(action1Invoked);
-            Assert.True(action2Invoked);
-            signal.Set();
-            await task;
+            var addTask = Task.Run(() => disposable.Add(() => { action2Invoked = true; }));
+            Assert.False(addTask.Wait(100));
             Assert.True(action1Invoked);
+            Assert.False(action2Invoked);
+            signal.Set();
+            await disposeTask;
+            await addTask;
+            Assert.True(action2Invoked);
         }
 
         [Fact]
