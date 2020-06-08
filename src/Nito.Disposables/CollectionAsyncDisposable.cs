@@ -79,13 +79,13 @@ namespace Nito.Disposables
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
         /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
-        public static CollectionDisposable Create(params IDisposable[] disposables) => new CollectionDisposable(disposables);
+        public static CollectionAsyncDisposable Create(params IAsyncDisposable[] disposables) => new CollectionAsyncDisposable(disposables);
 
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
         /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
-        public static CollectionDisposable Create(IEnumerable<IDisposable> disposables) => new CollectionDisposable(disposables);
+        public static CollectionAsyncDisposable Create(IEnumerable<IAsyncDisposable> disposables) => new CollectionAsyncDisposable(disposables);
     }
 }
 #endif
