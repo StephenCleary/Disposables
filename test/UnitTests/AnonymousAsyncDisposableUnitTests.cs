@@ -50,7 +50,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task Add_AfterDisposeStarts_ExecutingInParallel_InvokesActionImmediately()
+        public async Task Add_AfterDisposeStarts_ExecutingConcurrently_InvokesActionImmediately()
         {
             bool action1Invoked = false;
             bool action2Invoked = false;
