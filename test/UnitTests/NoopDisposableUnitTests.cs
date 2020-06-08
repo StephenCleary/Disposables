@@ -20,5 +20,12 @@ namespace UnitTests
             NoopDisposable.Instance.Dispose();
             NoopDisposable.Instance.Dispose();
         }
+
+        [Fact]
+        public async Task DisposeAsync_MultipleTimes_DoesNothing()
+        {
+            await NoopDisposable.Instance.DisposeAsync();
+            await NoopDisposable.Instance.DisposeAsync();
+        }
     }
 }
