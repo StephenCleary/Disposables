@@ -56,12 +56,12 @@ namespace UnitTests
             bool action2Invoked = false;
             var ready = new TaskCompletionSource<object>();
             var signal = new TaskCompletionSource<object>();
-            var disposable = AnonymousAsyncDisposable.Create(async () =>
+            var disposable = new AnonymousAsyncDisposable(async () =>
             {
                 ready.TrySetResult(null);
                 await signal.Task;
                 action1Invoked = true;
-            });
+            }, AsyncDisposeFlags.ExecuteConcurrently);
             var task = Task.Run(async () => await disposable.DisposeAsync());
             await ready.Task;
             await disposable.AddAsync(async () => { action2Invoked = true; });
@@ -79,12 +79,12 @@ namespace UnitTests
             bool action2Invoked = false;
             var ready = new TaskCompletionSource<object>();
             var signal = new TaskCompletionSource<object>();
-            var disposable = new AnonymousAsyncDisposable(async () =>
+            var disposable = AnonymousAsyncDisposable.Create(async () =>
             {
                 action1Invoked = true;
                 ready.TrySetResult(null);
                 await signal.Task;
-            }, AsyncDisposeFlags.ExecuteSerially);
+            });
             var disposeTask = Task.Run(async () => await disposable.DisposeAsync());
             await ready.Task;
             var addTask = Task.Run(async () => await disposable.AddAsync(async () => { action2Invoked = true; }));
@@ -101,7 +101,7 @@ namespace UnitTests
         public async Task Actions_ExecutingInSerial_ExecuteInSerial()
         {
             bool running = false;
-            var disposable = new AnonymousAsyncDisposable(null, AsyncDisposeFlags.ExecuteSerially);
+            var disposable = new AnonymousAsyncDisposable(null);
             for (int i = 0; i != 10; ++i)
             {
                 await disposable.AddAsync(async () =>

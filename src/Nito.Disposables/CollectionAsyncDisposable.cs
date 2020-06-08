@@ -19,7 +19,7 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
         public CollectionAsyncDisposable(params IAsyncDisposable[] disposables)
-            : this(disposables, AsyncDisposeFlags.ExecuteConcurrently)
+            : this(disposables, AsyncDisposeFlags.ExecuteSerially)
         {
         }
 
@@ -28,7 +28,7 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
         public CollectionAsyncDisposable(IEnumerable<IAsyncDisposable> disposables)
-            : this(disposables, AsyncDisposeFlags.ExecuteConcurrently)
+            : this(disposables, AsyncDisposeFlags.ExecuteSerially)
         {
         }
 
@@ -46,7 +46,7 @@ namespace Nito.Disposables
         /// <inheritdoc />
         protected override async ValueTask DisposeAsync(ImmutableQueue<IAsyncDisposable> context)
         {
-            if ((_flags & AsyncDisposeFlags.ExecuteSerially) == AsyncDisposeFlags.ExecuteSerially)
+            if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
             {
                 foreach (var disposable in context)
                     await disposable.DisposeAsync().ConfigureAwait(false);
@@ -70,7 +70,7 @@ namespace Nito.Disposables
                 return;
 
             // If we are executing serially, wait for our disposal to complete; then dispose the additional item.
-            if ((_flags & AsyncDisposeFlags.ExecuteSerially) == AsyncDisposeFlags.ExecuteSerially)
+            if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
                 await DisposeAsync().ConfigureAwait(false);
             await disposable.DisposeAsync().ConfigureAwait(false);
         }

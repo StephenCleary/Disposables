@@ -74,12 +74,15 @@ namespace UnitTests
             bool action2Invoked = false;
             var ready = new TaskCompletionSource<object>();
             var signal = new TaskCompletionSource<object>();
-            var disposable = CollectionAsyncDisposable.Create(new AnonymousAsyncDisposable(async () =>
+            var disposable = new CollectionAsyncDisposable(new[]
             {
-                ready.TrySetResult(null);
-                await signal.Task;
-                action1Invoked = true;
-            }));
+                new AnonymousAsyncDisposable(async () =>
+                {
+                    ready.TrySetResult(null);
+                    await signal.Task;
+                    action1Invoked = true;
+                }),
+            }, AsyncDisposeFlags.ExecuteConcurrently);
             var task = Task.Run(async () => await disposable.DisposeAsync());
             await ready.Task;
             await disposable.AddAsync(new AnonymousAsyncDisposable(async () => { action2Invoked = true; }));
@@ -97,15 +100,12 @@ namespace UnitTests
             bool action2Invoked = false;
             var ready = new TaskCompletionSource<object>();
             var signal = new TaskCompletionSource<object>();
-            var disposable = new CollectionAsyncDisposable(new []
-                {
-                    new AnonymousAsyncDisposable(async () =>
-                    {
-                        action1Invoked = true;
-                        ready.TrySetResult(null);
-                        await signal.Task;
-                    })
-                }, AsyncDisposeFlags.ExecuteSerially);
+            var disposable = CollectionAsyncDisposable.Create(new AnonymousAsyncDisposable(async () =>
+            {
+                action1Invoked = true;
+                ready.TrySetResult(null);
+                await signal.Task;
+            }));
             var disposeTask = Task.Run(async () => await disposable.DisposeAsync());
             await ready.Task;
             var addTask = Task.Run(async () => await disposable.AddAsync(new AnonymousAsyncDisposable(async () => { action2Invoked = true; })));
@@ -122,7 +122,7 @@ namespace UnitTests
         public async Task Children_ExecutingInSerial_ExecuteInSerial()
         {
             bool running = false;
-            var disposable = new CollectionAsyncDisposable(new IAsyncDisposable[0], AsyncDisposeFlags.ExecuteSerially);
+            var disposable = new CollectionAsyncDisposable();
             for (int i = 0; i != 10; ++i)
             {
                 await disposable.AddAsync(new AnonymousAsyncDisposable(async () =>

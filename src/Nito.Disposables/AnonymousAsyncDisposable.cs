@@ -18,7 +18,7 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
         public AnonymousAsyncDisposable(Func<ValueTask>? dispose)
-            : this(dispose, AsyncDisposeFlags.ExecuteConcurrently)
+            : this(dispose, AsyncDisposeFlags.ExecuteSerially)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Nito.Disposables
 
         private async ValueTask DoDisposeAsync(IReadOnlyList<Delegate> handlers)
         {
-            if ((_flags & AsyncDisposeFlags.ExecuteSerially) == AsyncDisposeFlags.ExecuteSerially)
+            if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
             {
                 foreach (var handler in handlers)
                     await ((Func<ValueTask>) handler)().ConfigureAwait(false);
@@ -73,7 +73,7 @@ namespace Nito.Disposables
                 return;
 
             // If we are executing serially, wait for our disposal to complete; then call the additional delegate.
-            if ((_flags & AsyncDisposeFlags.ExecuteSerially) == AsyncDisposeFlags.ExecuteSerially)
+            if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
                 await DisposeAsync().ConfigureAwait(false);
             await dispose().ConfigureAwait(false);
         }
