@@ -3,15 +3,15 @@
 namespace Nito.Disposables
 {
     /// <summary>
-    /// Equivalent to <see cref="Disposable"/>.
+    /// A disposable that executes a delegate when disposed.
     /// </summary>
-    public sealed class AnonymousDisposable : SingleDisposable<Action>
+    public sealed class Disposable : SingleDisposable<Action>
     {
         /// <summary>
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
-        public AnonymousDisposable(Action? dispose)
+        public Disposable(Action? dispose)
             : base(dispose!)
         {
         }
@@ -40,6 +40,6 @@ namespace Nito.Disposables
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
-        public static AnonymousDisposable Create(Action? dispose) => new AnonymousDisposable(dispose);
+        public static Disposable Create(Action? dispose) => new Disposable(dispose);
     }
 }

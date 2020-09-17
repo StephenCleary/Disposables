@@ -13,7 +13,7 @@ namespace UnitTests
         public void Dispose_DisposesChild()
         {
             bool actionInvoked = false;
-            var disposable = CollectionDisposable.Create(new AnonymousDisposable(() => { actionInvoked = true; }));
+            var disposable = CollectionDisposable.Create(new Disposable(() => { actionInvoked = true; }));
             disposable.Dispose();
             Assert.True(actionInvoked);
         }
@@ -23,7 +23,7 @@ namespace UnitTests
         {
             bool action1Invoked = false;
             bool action2Invoked = false;
-            var disposable = CollectionDisposable.Create(new AnonymousDisposable(() => { action1Invoked = true; }), new AnonymousDisposable(() => { action2Invoked = true; }));
+            var disposable = CollectionDisposable.Create(new Disposable(() => { action1Invoked = true; }), new Disposable(() => { action2Invoked = true; }));
             disposable.Dispose();
             Assert.True(action1Invoked);
             Assert.True(action2Invoked);
@@ -34,7 +34,7 @@ namespace UnitTests
         {
             var action1Invoked = new BoolHolder();
             var action2Invoked = new BoolHolder();
-            var disposable = CollectionDisposable.Create(new[] { action1Invoked, action2Invoked }.Select(bh => new AnonymousDisposable(() => { bh.Value = true; })));
+            var disposable = CollectionDisposable.Create(new[] { action1Invoked, action2Invoked }.Select(bh => new Disposable(() => { bh.Value = true; })));
             disposable.Dispose();
             Assert.True(action1Invoked.Value);
             Assert.True(action2Invoked.Value);
@@ -45,8 +45,8 @@ namespace UnitTests
         {
             bool action1Invoked = false;
             bool action2Invoked = false;
-            var disposable = CollectionDisposable.Create(new AnonymousDisposable(() => { action1Invoked = true; }));
-            disposable.Add(new AnonymousDisposable(() => { action2Invoked = true; }));
+            var disposable = CollectionDisposable.Create(new Disposable(() => { action1Invoked = true; }));
+            disposable.Add(new Disposable(() => { action2Invoked = true; }));
             disposable.Dispose();
             Assert.True(action1Invoked);
             Assert.True(action2Invoked);
@@ -59,7 +59,7 @@ namespace UnitTests
             bool action2Invoked = false;
             var ready = new ManualResetEventSlim();
             var signal = new ManualResetEventSlim();
-            var disposable = CollectionDisposable.Create(new AnonymousDisposable(() =>
+            var disposable = CollectionDisposable.Create(new Disposable(() =>
             {
                 action1Invoked = true;
                 ready.Set();
@@ -67,7 +67,7 @@ namespace UnitTests
             }));
             var disposeTask = Task.Run(() => disposable.Dispose());
             ready.Wait();
-            var addTask = Task.Run(() => disposable.Add(new AnonymousDisposable(() => { action2Invoked = true; })));
+            var addTask = Task.Run(() => disposable.Add(new Disposable(() => { action2Invoked = true; })));
             Assert.False(addTask.Wait(100));
             Assert.True(action1Invoked);
             Assert.False(action2Invoked);
@@ -81,7 +81,7 @@ namespace UnitTests
         public void MultipleDispose_OnlyDisposesChildOnce()
         {
             var counter = 0;
-            var disposable = new CollectionDisposable(new AnonymousDisposable(() => { ++counter; }));
+            var disposable = new CollectionDisposable(new Disposable(() => { ++counter; }));
             disposable.Dispose();
             disposable.Dispose();
             Assert.Equal(1, counter);

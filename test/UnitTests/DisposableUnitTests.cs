@@ -7,12 +7,12 @@ using Xunit;
 
 namespace UnitTests
 {
-    public class AnonymousDisposableUnitTests
+    public class DisposableUnitTests
     {
         [Fact]
         public void Dispose_NullAction_DoesNotThrow()
         {
-            var disposable = AnonymousDisposable.Create(null);
+            var disposable = Disposable.Create(null);
             disposable.Dispose();
         }
 
@@ -20,7 +20,7 @@ namespace UnitTests
         public void Dispose_InvokesAction()
         {
             bool actionInvoked = false;
-            var disposable = AnonymousDisposable.Create(() => { actionInvoked = true; });
+            var disposable = Disposable.Create(() => { actionInvoked = true; });
             disposable.Dispose();
             Assert.True(actionInvoked);
         }
@@ -30,7 +30,7 @@ namespace UnitTests
         {
             bool action1Invoked = false;
             bool action2Invoked = false;
-            var disposable = AnonymousDisposable.Create(() => { action1Invoked = true; });
+            var disposable = Disposable.Create(() => { action1Invoked = true; });
             disposable.Add(() => { action2Invoked = true; });
             disposable.Dispose();
             Assert.True(action1Invoked);
@@ -41,7 +41,7 @@ namespace UnitTests
         public void Dispose_AfterAddingNull_DoesNotThrow()
         {
             bool action1Invoked = false;
-            var disposable = AnonymousDisposable.Create(() => { action1Invoked = true; });
+            var disposable = Disposable.Create(() => { action1Invoked = true; });
             disposable.Add(null);
             disposable.Dispose();
             Assert.True(action1Invoked);
@@ -54,7 +54,7 @@ namespace UnitTests
             bool action2Invoked = false;
             var ready = new ManualResetEventSlim();
             var signal = new ManualResetEventSlim();
-            var disposable = AnonymousDisposable.Create(() =>
+            var disposable = Disposable.Create(() =>
             {
                 action1Invoked = true;
                 ready.Set();
@@ -76,7 +76,7 @@ namespace UnitTests
         public void MultipleDispose_OnlyInvokesActionOnce()
         {
             var counter = 0;
-            var disposable = AnonymousDisposable.Create(() => { ++counter; });
+            var disposable = Disposable.Create(() => { ++counter; });
             disposable.Dispose();
             disposable.Dispose();
             Assert.Equal(1, counter);

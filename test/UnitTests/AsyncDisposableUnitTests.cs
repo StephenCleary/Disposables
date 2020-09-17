@@ -9,12 +9,12 @@ using Xunit;
 
 namespace UnitTests
 {
-    public class AnonymousAsyncDisposableUnitTests
+    public class AsyncDisposableUnitTests
     {
         [Fact]
         public async Task Dispose_NullAction_DoesNotThrow()
         {
-            var disposable = AnonymousAsyncDisposable.Create(null);
+            var disposable = AsyncDisposable.Create(null);
             await disposable.DisposeAsync();
         }
 
@@ -22,7 +22,7 @@ namespace UnitTests
         public async Task Dispose_InvokesAction()
         {
             bool actionInvoked = false;
-            var disposable = AnonymousAsyncDisposable.Create(async () => { actionInvoked = true; });
+            var disposable = AsyncDisposable.Create(async () => { actionInvoked = true; });
             await disposable.DisposeAsync();
             Assert.True(actionInvoked);
         }
@@ -32,7 +32,7 @@ namespace UnitTests
         {
             bool action1Invoked = false;
             bool action2Invoked = false;
-            var disposable = AnonymousAsyncDisposable.Create(async () => { action1Invoked = true; });
+            var disposable = AsyncDisposable.Create(async () => { action1Invoked = true; });
             await disposable.AddAsync(async () => { action2Invoked = true; });
             await disposable.DisposeAsync();
             Assert.True(action1Invoked);
@@ -43,7 +43,7 @@ namespace UnitTests
         public async Task Dispose_AfterAddingNull_DoesNotThrow()
         {
             bool action1Invoked = false;
-            var disposable = AnonymousAsyncDisposable.Create(async () => { action1Invoked = true; });
+            var disposable = AsyncDisposable.Create(async () => { action1Invoked = true; });
             await disposable.AddAsync(null);
             await disposable.DisposeAsync();
             Assert.True(action1Invoked);
@@ -56,7 +56,7 @@ namespace UnitTests
             bool action2Invoked = false;
             var ready = new TaskCompletionSource<object>();
             var signal = new TaskCompletionSource<object>();
-            var disposable = new AnonymousAsyncDisposable(async () =>
+            var disposable = new AsyncDisposable(async () =>
             {
                 ready.TrySetResult(null);
                 await signal.Task;
@@ -79,7 +79,7 @@ namespace UnitTests
             bool action2Invoked = false;
             var ready = new TaskCompletionSource<object>();
             var signal = new TaskCompletionSource<object>();
-            var disposable = AnonymousAsyncDisposable.Create(async () =>
+            var disposable = AsyncDisposable.Create(async () =>
             {
                 action1Invoked = true;
                 ready.TrySetResult(null);
@@ -101,7 +101,7 @@ namespace UnitTests
         public async Task Actions_ExecutingInSerial_ExecuteInSerial()
         {
             bool running = false;
-            var disposable = new AnonymousAsyncDisposable(null);
+            var disposable = new AsyncDisposable(null);
             for (int i = 0; i != 10; ++i)
             {
                 await disposable.AddAsync(async () =>
@@ -120,7 +120,7 @@ namespace UnitTests
         public async Task MultipleDispose_OnlyInvokesActionOnce()
         {
             var counter = 0;
-            var disposable = AnonymousAsyncDisposable.Create(async () => { ++counter; });
+            var disposable = AsyncDisposable.Create(async () => { ++counter; });
             await disposable.DisposeAsync();
             await disposable.DisposeAsync();
             Assert.Equal(1, counter);

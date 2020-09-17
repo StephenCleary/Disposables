@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace Nito.Disposables
 {
     /// <summary>
-    /// Equivalent to <see cref="AsyncDisposable"/>.
+    /// A disposable that executes a delegate when disposed.
     /// </summary>
-    public sealed class AnonymousAsyncDisposable : SingleAsyncDisposable<Func<ValueTask>>
+    public sealed class AsyncDisposable : SingleAsyncDisposable<Func<ValueTask>>
     {
         private readonly AsyncDisposeFlags _flags;
 
@@ -17,7 +17,7 @@ namespace Nito.Disposables
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
-        public AnonymousAsyncDisposable(Func<ValueTask>? dispose)
+        public AsyncDisposable(Func<ValueTask>? dispose)
             : this(dispose, AsyncDisposeFlags.ExecuteSerially)
         {
         }
@@ -27,7 +27,7 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
         /// <param name="flags">Flags that control how asynchronous disposal is handled.</param>
-        public AnonymousAsyncDisposable(Func<ValueTask>? dispose, AsyncDisposeFlags flags)
+        public AsyncDisposable(Func<ValueTask>? dispose, AsyncDisposeFlags flags)
             : base(dispose!)
         {
             _flags = flags;
@@ -82,7 +82,7 @@ namespace Nito.Disposables
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
-        public static AnonymousAsyncDisposable Create(Func<ValueTask>? dispose) => new AnonymousAsyncDisposable(dispose);
+        public static AsyncDisposable Create(Func<ValueTask>? dispose) => new AsyncDisposable(dispose);
     }
 }
 #endif

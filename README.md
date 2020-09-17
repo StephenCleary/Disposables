@@ -3,21 +3,27 @@
 # Disposables [![Build status](https://github.com/StephenCleary/Disposables/workflows/Build/badge.svg)](https://github.com/StephenCleary/Disposables/actions?query=workflow%3ABuild) [![codecov](https://codecov.io/gh/StephenCleary/Disposables/branch/master/graph/badge.svg)](https://codecov.io/gh/StephenCleary/Disposables) [![NuGet version](https://badge.fury.io/nu/Nito.Disposables.svg)](https://www.nuget.org/packages/Nito.Disposables) [![API docs](https://img.shields.io/badge/API-dotnetapis-blue.svg)](http://dotnetapis.com/pkg/Nito.Disposables)
 IDisposable helper types.
 
-## AnonymousDisposable and AsyncAnonymousDisposable
+# Main Types
 
-The `AnonymousDisposable` type wraps an `Action`, and invokes that `Action` exactly once when it is disposed. The first thread to call `Dispose` is the one that invokes the `Action`; all other threads that call `Dispose` are blocked until the `Action` is completed. Once the `Action` is completed, it is never invoked again; future calls to `AnonymousDisposable.Dispose` are no-ops.
+- `Disposable`/`AsyncDisposable` - When disposed, invokes an `Action`/`Func<ValueTask>`.
+- `CollectionDisposable`/`AsyncCollectionDisposable` - When disposed, disposes a collection of other disposables.
+- `NoopDisposable` - When disposed, does nothing.
 
-You can create an `AnonymousDisposable` by calling `AnonymousDisposable.Create(Action)` or `new AnonymousDisposable(Action)`.
+## Disposable and AsyncDisposable
 
-`AsyncAnonymousDisposable` is exactly the same as `AnonymousDisposable` except it wraps a `Func<Task>`.
+The `Disposable` type wraps an `Action`, and invokes that `Action` exactly once when it is disposed. The first thread to call `Dispose` is the one that invokes the `Action`; all other threads that call `Dispose` are blocked until the `Action` is completed. Once the `Action` is completed, it is never invoked again; future calls to `Disposable.Dispose` are no-ops.
+
+You can create a `Disposable` by calling `Disposable.Create(Action)` or `new Disposable(Action)`.
+
+`AsyncDisposable` is exactly the same as `Disposable` except it wraps a `Func<ValueTask>`.
 
 If the `Action` (or `Func<Task>`) throws an exception, only the first caller of `Dispose` (or `DisposeAsync`) will observe the exception. All other calls to `Dispose` / `DisposeAsync` will wait for the delegate to complete, but they will not observe the exception.
 
 ### Advanced
 
-You can append an `Action` to an `AnonymousDisposable` by calling its `Add` method with the `Action` to add. If the `AnonymousDisposable` is already disposed (or is in the process of being disposed by another thread), then the additional `Action` is invoked immediately.
+You can append an `Action` to a `Disposable` by calling its `Add` method with the `Action` to add. If the `Disposable` is already disposed (or is in the process of being disposed by another thread), then the additional `Action` is invoked immediately.
 
-`AsyncAnonymousDisposable` may also have multiple delegates. By default, they are all invoked concurrently, but you can change this to serial by creating the instance with the `AsyncDisposeFlags.ExecuteSerially` flag.
+`AsyncDisposable` may also have multiple delegates. By default, they are all invoked concurrently, but you can change this to serial by creating the instance with the `AsyncDisposeFlags.ExecuteSerially` flag.
 
 ## CollectionDisposable
 
@@ -45,7 +51,7 @@ You can retrieve the singleton instance via `NoopDisposable.Instance`.
 
 ## SingleDisposable&lt;T&gt;
 
-The `SingleDisposable<T>` type is a base type for disposables that desire exactly-once semantics, blocking other threads calling `Dispose` until the initial `Dispose` is complete. Both `AnonymousDisposable` and `CollectionDisposable` inherit from this type.
+The `SingleDisposable<T>` type is a base type for disposables that desire exactly-once semantics, blocking other threads calling `Dispose` until the initial `Dispose` is complete. Both `Disposable` and `CollectionDisposable` inherit from this type.
 
 The type `T` is an immutable type that represents the contextual state of the instance. It is initialized in the constructor, optionally updated by calling `TryUpdateContext`, and finally retrieved and passed to `Dispose(T)` exactly once when `Dispose()` is called.
 

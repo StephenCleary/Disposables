@@ -15,7 +15,7 @@ namespace UnitTests
         public async Task Dispose_DisposesChild()
         {
             bool actionInvoked = false;
-            var disposable = CollectionAsyncDisposable.Create(new AnonymousAsyncDisposable(async () => { actionInvoked = true; }));
+            var disposable = CollectionAsyncDisposable.Create(new AsyncDisposable(async () => { actionInvoked = true; }));
             await disposable.DisposeAsync();
             Assert.True(actionInvoked);
         }
@@ -25,7 +25,7 @@ namespace UnitTests
         {
             bool action1Invoked = false;
             bool action2Invoked = false;
-            var disposable = CollectionAsyncDisposable.Create(new AnonymousAsyncDisposable(async () => { action1Invoked = true; }), new AnonymousAsyncDisposable(async () => { action2Invoked = true; }));
+            var disposable = CollectionAsyncDisposable.Create(new AsyncDisposable(async () => { action1Invoked = true; }), new AsyncDisposable(async () => { action2Invoked = true; }));
             await disposable.DisposeAsync();
             Assert.True(action1Invoked);
             Assert.True(action2Invoked);
@@ -36,7 +36,7 @@ namespace UnitTests
         {
             var action1Invoked = new BoolHolder();
             var action2Invoked = new BoolHolder();
-            var disposable = CollectionAsyncDisposable.Create(new[] { action1Invoked, action2Invoked }.Select(bh => new AnonymousAsyncDisposable(async () => { bh.Value = true; })));
+            var disposable = CollectionAsyncDisposable.Create(new[] { action1Invoked, action2Invoked }.Select(bh => new AsyncDisposable(async () => { bh.Value = true; })));
             await disposable.DisposeAsync();
             Assert.True(action1Invoked.Value);
             Assert.True(action2Invoked.Value);
@@ -47,8 +47,8 @@ namespace UnitTests
         {
             bool action1Invoked = false;
             bool action2Invoked = false;
-            var disposable = CollectionAsyncDisposable.Create(new AnonymousAsyncDisposable(async () => { action1Invoked = true; }));
-            await disposable.AddAsync(new AnonymousAsyncDisposable(async () => { action2Invoked = true; }));
+            var disposable = CollectionAsyncDisposable.Create(new AsyncDisposable(async () => { action1Invoked = true; }));
+            await disposable.AddAsync(new AsyncDisposable(async () => { action2Invoked = true; }));
             await disposable.DisposeAsync();
             Assert.True(action1Invoked);
             Assert.True(action2Invoked);
@@ -60,8 +60,8 @@ namespace UnitTests
             bool action1Invoked = false;
             bool action2Invoked = false;
             var disposable = CollectionAsyncDisposable.Create(
-                new AnonymousAsyncDisposable(async () => { action1Invoked = true; }),
-                AnonymousDisposable.Create(() => action2Invoked = true).ToAsyncDisposable());
+                new AsyncDisposable(async () => { action1Invoked = true; }),
+                Disposable.Create(() => action2Invoked = true).ToAsyncDisposable());
             await disposable.DisposeAsync();
             Assert.True(action1Invoked);
             Assert.True(action2Invoked);
@@ -76,7 +76,7 @@ namespace UnitTests
             var signal = new TaskCompletionSource<object>();
             var disposable = new CollectionAsyncDisposable(new[]
             {
-                new AnonymousAsyncDisposable(async () =>
+                new AsyncDisposable(async () =>
                 {
                     ready.TrySetResult(null);
                     await signal.Task;
@@ -85,7 +85,7 @@ namespace UnitTests
             }, AsyncDisposeFlags.ExecuteConcurrently);
             var task = Task.Run(async () => await disposable.DisposeAsync());
             await ready.Task;
-            await disposable.AddAsync(new AnonymousAsyncDisposable(async () => { action2Invoked = true; }));
+            await disposable.AddAsync(new AsyncDisposable(async () => { action2Invoked = true; }));
             Assert.False(action1Invoked);
             Assert.True(action2Invoked);
             signal.TrySetResult(null);
@@ -100,7 +100,7 @@ namespace UnitTests
             bool action2Invoked = false;
             var ready = new TaskCompletionSource<object>();
             var signal = new TaskCompletionSource<object>();
-            var disposable = CollectionAsyncDisposable.Create(new AnonymousAsyncDisposable(async () =>
+            var disposable = CollectionAsyncDisposable.Create(new AsyncDisposable(async () =>
             {
                 action1Invoked = true;
                 ready.TrySetResult(null);
@@ -108,7 +108,7 @@ namespace UnitTests
             }));
             var disposeTask = Task.Run(async () => await disposable.DisposeAsync());
             await ready.Task;
-            var addTask = Task.Run(async () => await disposable.AddAsync(new AnonymousAsyncDisposable(async () => { action2Invoked = true; })));
+            var addTask = Task.Run(async () => await disposable.AddAsync(new AsyncDisposable(async () => { action2Invoked = true; })));
             Assert.NotEqual(addTask, await Task.WhenAny(addTask, Task.Delay(100)));
             Assert.True(action1Invoked);
             Assert.False(action2Invoked);
@@ -125,7 +125,7 @@ namespace UnitTests
             var disposable = new CollectionAsyncDisposable();
             for (int i = 0; i != 10; ++i)
             {
-                await disposable.AddAsync(new AnonymousAsyncDisposable(async () =>
+                await disposable.AddAsync(new AsyncDisposable(async () =>
                 {
                     Assert.False(running);
                     running = true;
@@ -141,7 +141,7 @@ namespace UnitTests
         public async Task MultipleDispose_OnlyDisposesChildOnce()
         {
             var counter = 0;
-            var disposable = new CollectionAsyncDisposable(new AnonymousAsyncDisposable(async () => { ++counter; }));
+            var disposable = new CollectionAsyncDisposable(new AsyncDisposable(async () => { ++counter; }));
             await disposable.DisposeAsync();
             await disposable.DisposeAsync();
             Assert.Equal(1, counter);
