@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
+using Nito.Disposables.Internals;
 
 namespace Nito.Disposables
 {
@@ -12,18 +14,18 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
-        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
-        public CollectionDisposable(params IDisposable[] disposables)
-            : this((IEnumerable<IDisposable>)disposables)
+        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, but entries may be <c>null</c>.</param>
+        public CollectionDisposable(params IDisposable?[] disposables)
+            : this((IEnumerable<IDisposable?>)disposables)
         {
         }
 
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
-        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
-        public CollectionDisposable(IEnumerable<IDisposable> disposables)
-            : base(ImmutableQueue.CreateRange(disposables))
+        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, but entries may be <c>null</c>.</param>
+        public CollectionDisposable(IEnumerable<IDisposable?> disposables)
+            : base(ImmutableQueue.CreateRange(disposables.WhereNotNull()))
         {
         }
 
@@ -31,17 +33,18 @@ namespace Nito.Disposables
         protected override void Dispose(ImmutableQueue<IDisposable> context)
         {
             foreach (var disposable in context)
-                disposable.Dispose();
+                disposable?.Dispose();
         }
 
         /// <summary>
         /// Adds a disposable to the collection of disposables. If this instance is already disposed or disposing, then <paramref name="disposable"/> is disposed immediately.
         /// If this method is called multiple times concurrently at the same time this instance is disposed, then the different <paramref name="disposable"/> arguments may be disposed concurrently.
         /// </summary>
-        /// <param name="disposable">The disposable to add to our collection. May not be <c>null</c>.</param>
-        public void Add(IDisposable disposable)
+        /// <param name="disposable">The disposable to add to our collection. May be <c>null</c>.</param>
+        public void Add(IDisposable? disposable)
         {
-            _ = disposable ?? throw new ArgumentNullException(nameof(disposable));
+            if (disposable == null)
+                return;
             if (TryUpdateContext(x => x.Enqueue(disposable)))
                 return;
 
@@ -53,13 +56,13 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
-        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
-        public static CollectionDisposable Create(params IDisposable[] disposables) => new CollectionDisposable(disposables);
+        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, but entries may be <c>null</c>.</param>
+        public static CollectionDisposable Create(params IDisposable?[] disposables) => new CollectionDisposable(disposables);
 
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
-        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, and entries may not be <c>null</c>.</param>
-        public static CollectionDisposable Create(IEnumerable<IDisposable> disposables) => new CollectionDisposable(disposables);
+        /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, but entries may be <c>null</c>.</param>
+        public static CollectionDisposable Create(IEnumerable<IDisposable?> disposables) => new CollectionDisposable(disposables);
     }
 }

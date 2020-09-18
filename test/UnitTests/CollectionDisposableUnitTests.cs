@@ -10,6 +10,13 @@ namespace UnitTests
     public class CollectionDisposableUnitTests
     {
         [Fact]
+        public void Dispose_NullChild_DoesNotThrow()
+        {
+            var disposable = CollectionDisposable.Create((IDisposable) null);
+            disposable.Dispose();
+        }
+
+        [Fact]
         public void Dispose_DisposesChild()
         {
             bool actionInvoked = false;
@@ -50,6 +57,16 @@ namespace UnitTests
             disposable.Dispose();
             Assert.True(action1Invoked);
             Assert.True(action2Invoked);
+        }
+        
+        [Fact]
+        public void Dispose_AfterAddingNullChild_DoesNotThrow()
+        {
+            bool action1Invoked = false;
+            var disposable = CollectionDisposable.Create(new Disposable(() => { action1Invoked = true; }));
+            disposable.Add(null);
+            disposable.Dispose();
+            Assert.True(action1Invoked);
         }
 
         [Fact]

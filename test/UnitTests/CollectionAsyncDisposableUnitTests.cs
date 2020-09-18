@@ -12,6 +12,13 @@ namespace UnitTests
     public class CollectionAsyncDisposableUnitTests
     {
         [Fact]
+        public async Task Dispose_NullChild_DoesNotThrow()
+        {
+            var disposable = CollectionAsyncDisposable.Create((IAsyncDisposable)null);
+            await disposable.DisposeAsync();
+        }
+
+        [Fact]
         public async Task Dispose_DisposesChild()
         {
             bool actionInvoked = false;
@@ -52,6 +59,16 @@ namespace UnitTests
             await disposable.DisposeAsync();
             Assert.True(action1Invoked);
             Assert.True(action2Invoked);
+        }
+
+        [Fact]
+        public async Task Dispose_AfterAddingNullChild_DoesNotThrow()
+        {
+            bool action1Invoked = false;
+            var disposable = CollectionAsyncDisposable.Create(new AsyncDisposable(async () => { action1Invoked = true; }));
+            await disposable.AddAsync(null);
+            await disposable.DisposeAsync();
+            Assert.True(action1Invoked);
         }
 
         [Fact]
