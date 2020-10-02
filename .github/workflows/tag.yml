@@ -37,6 +37,7 @@ jobs:
     - name: Get current version
       run: |
         dotnet tool install --global Nito.ProjProps
+        projprops --name version --output-format SingleValueOnly --project-search --debug
         echo ::set-env name=NEWTAG::v$(projprops --name version --output-format SingleValueOnly --project-search)
 
     - name: Create tag
