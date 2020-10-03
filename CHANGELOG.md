@@ -3,6 +3,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [2.2.0] - 2020-10-02
+- [Feature] Added support for `null` disposables and delegates (which are ignored).
+- [Feature] Added `Disposable` and `AsyncDisposable`.
+
 ## [2.1.0] - 2020-06-08
 - [Feature] Added `AnonymousAsyncDisposable`.
 - [Feature] Added `CollectionAsyncDisposable`.
