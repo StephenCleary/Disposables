@@ -45,6 +45,7 @@ namespace Nito.Disposables.Internals
         /// <param name="contextUpdater">The function used to update an existing context. This may be called more than once if more than one thread attempts to simultaneously update the context.</param>
         public bool TryUpdateContext(Func<T, T> contextUpdater)
         {
+            _ = contextUpdater ?? throw new ArgumentNullException(nameof(contextUpdater));
             while (true)
             {
                 var original = Interlocked.CompareExchange(ref _field, _field, _field);
