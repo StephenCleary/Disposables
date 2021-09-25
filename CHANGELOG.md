@@ -3,6 +3,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [2.2.1] - 2021-09-25
+- [Fix] Bumped `System.Collections.Immutable` dependency version from `1.4.0` to `1.7.1`. This fixes the shim dlls issue on .NET Framework targets.
+
 ## [2.2.0] - 2020-10-02
 - [Feature] Added support for `null` disposables and delegates (which are ignored).
 - [Feature] Added `Disposable` and `AsyncDisposable`.
