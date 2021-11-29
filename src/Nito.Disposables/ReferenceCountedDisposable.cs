@@ -35,7 +35,7 @@ namespace Nito.Disposables
         public ReferenceCountedDisposable? TryAddReference()
         {
             ReferenceCount referenceCount = null!;
-            // Implementation note: IncrementCount always "succeds" in updating the context since it always returns the same instance.
+            // Implementation note: IncrementCount always "succeeds" in updating the context since it always returns the same instance.
             // So, we know that IncrementCount will be called at most once. It may also be called zero times if this instance is disposed.
             if (!TryUpdateContext(x => referenceCount = ((ReferenceCount)x).IncrementCount()))
                 return null;
@@ -64,20 +64,98 @@ namespace Nito.Disposables
                 _count = count;
             }
 
-            public ReferenceCount IncrementCount()
-            {
-                if (Interlocked.Increment(ref _count) == 1)
-                    throw new InvalidOperationException($"Internal error during {nameof(IncrementCount)} in {nameof(ReferenceCountedDisposable)}");
-                return this;
-            }
+            public ReferenceCount IncrementCount() =>
+                TryIncrementCount() ?? throw new InvalidOperationException($"Internal error during {nameof(IncrementCount)} in {nameof(ReferenceCountedDisposable)}");
+
+            public ReferenceCount? TryIncrementCount() => TryUpdate(x => x == 0 ? null : x + 1) == null ? null : this;
+
+            public int? TryDecrementCount() => TryUpdate(x => x == 0 ? null : x - 1);
 
             public void DecrementCount()
             {
-                var result = Interlocked.Decrement(ref _count);
-                if (result < 0)
+                var result = TryDecrementCount();
+                if (result == null)
                     throw new InvalidOperationException($"Internal error during {nameof(DecrementCount)} in {nameof(ReferenceCountedDisposable)}");
                 if (result == 0)
                     _disposable?.Dispose();
+            }
+
+            private int? TryUpdate(Func<int, int?> func)
+            {
+                while (true)
+                {
+                    var original = Interlocked.CompareExchange(ref _count, 0, 0);
+                    if (original == 0)
+                        return null;
+                    var updatedCount = func(original);
+                    if (updatedCount == null)
+                        return null;
+                    var result = Interlocked.CompareExchange(ref _count, updatedCount.Value, original);
+                    if (original == result)
+                        return updatedCount.Value;
+                }
+            }
+        }
+
+        public sealed class UncountedReference
+        {
+            private readonly ReferenceCount _referenceCount;
+
+            private UncountedReference(ReferenceCount referenceCount)
+            {
+                _referenceCount = referenceCount;
+            }
+
+            public static UncountedReference? TryCreate(ReferenceCountedDisposable referenceCountedDisposable)
+            {
+                _ = referenceCountedDisposable ?? throw new ArgumentNullException(nameof(referenceCountedDisposable));
+                ReferenceCount referenceCount = null!;
+                // Implementation note: TryUpdateContext always "succeeds" in updating the context since the lambda always returns the same instance.
+                // The only way this isn't the case is if the reference counted disposable has been disposed.
+                if (!referenceCountedDisposable.TryUpdateContext(x => referenceCount = (ReferenceCount)x))
+                    return null;
+                return new(referenceCount);
+            }
+
+            // TODO: we want to allow incrementing this to change an uncounted reference into a reference counted disposable,
+            //  but that can't be safely done using Interlocked. Perhaps if we used `lock`. Or perhaps our BoundAction needs another primitive operation.
+            // Or perhaps the ReferenceCount itself should be a SingleDisposable<int>?
+
+            public ReferenceCountedDisposable? TryAddReference()
+            {
+                if (_referenceCount.TryIncrementCount() == null)
+                    return null;
+                return new(_referenceCount);
+            }
+        }
+
+        public sealed class WeakReference
+        {
+            private readonly WeakReference<ReferenceCount> _weakReference;
+
+            private WeakReference(ReferenceCount referenceCount)
+            {
+                _weakReference = new(referenceCount);
+            }
+
+            public static WeakReference? TryCreate(ReferenceCountedDisposable referenceCountedDisposable)
+            {
+                _ = referenceCountedDisposable ?? throw new ArgumentNullException(nameof(referenceCountedDisposable));
+                ReferenceCount referenceCount = null!;
+                // Implementation note: TryUpdateContext always "succeeds" in updating the context since the lambda always returns the same instance.
+                // The only way this isn't the case is if the reference counted disposable has been disposed.
+                if (!referenceCountedDisposable.TryUpdateContext(x => referenceCount = (ReferenceCount)x))
+                    return null;
+                return new(referenceCount);
+            }
+
+            public ReferenceCountedDisposable? TryAddReference()
+            {
+                if (!_weakReference.TryGetTarget(out var referenceCount))
+                    return null;
+                if (referenceCount.TryIncrementCount() == null)
+                    return null;
+                return new(referenceCount);
             }
         }
     }
