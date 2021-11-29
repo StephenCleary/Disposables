@@ -6,7 +6,7 @@ namespace Nito.Disposables
     /// <summary>
     /// Equivalent to <see cref="Disposable"/>.
     /// </summary>
-    public sealed class ReferenceCountedDisposable : SingleDisposable<object>
+    public sealed class ReferenceCountedDisposable : SingleDisposable<object>, IAddReference
     {
         /// <summary>
         /// Creates a new disposable that disposes <paramref name="disposable"/> when all reference counts have been disposed.
@@ -47,6 +47,26 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
         public static ReferenceCountedDisposable Create(IDisposable? disposable) => new (disposable);
+
+        /// <summary>
+        /// Adds an uncounted reference to this reference counted disposable. If the underlying disposable has already been disposed, returns <c>null</c>.
+        /// </summary>
+        public IAddReference? TryAddUncountedReference() => UncountedReference.TryCreate(this);
+
+        /// <summary>
+        /// Adds an uncounted reference to this reference counted disposable. Throws an exception if the underlying disposable has already been disposed.
+        /// </summary>
+        public IAddReference AddUncountedReference() => TryAddUncountedReference() ?? AddReferenceExtensions.ThrowDisposedTargetException();
+
+        /// <summary>
+        /// Adds a weak reference to this reference counted disposable. If the underlying disposable has already been disposed, returns <c>null</c>.
+        /// </summary>
+        public IAddReference? TryAddWeakReference() => WeakReference.TryCreate(this);
+
+        /// <summary>
+        /// Adds a weak reference to this reference counted disposable. Throws an exception if the underlying disposable has already been disposed.
+        /// </summary>
+        public IAddReference AddWeakReference() => TryAddWeakReference() ?? AddReferenceExtensions.ThrowDisposedTargetException();
 
         private sealed class ReferenceCount
         {
@@ -97,7 +117,7 @@ namespace Nito.Disposables
             }
         }
 
-        public sealed class UncountedReference
+        private sealed class UncountedReference : IAddReference
         {
             private readonly ReferenceCount _referenceCount;
 
@@ -129,7 +149,7 @@ namespace Nito.Disposables
             }
         }
 
-        public sealed class WeakReference
+        private sealed class WeakReference : IAddReference
         {
             private readonly WeakReference<ReferenceCount> _weakReference;
 
