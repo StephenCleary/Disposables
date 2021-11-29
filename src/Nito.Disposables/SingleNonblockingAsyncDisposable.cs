@@ -34,7 +34,7 @@ namespace Nito.Disposables
         public bool IsDisposed => _context.IsEmpty;
 
         /// <summary>
-        /// The actul disposal method, called only once from <see cref="DisposeAsync()"/>.
+        /// The actual disposal method, called only once from <see cref="DisposeAsync()"/>.
         /// </summary>
         /// <param name="context">The context for the disposal operation.</param>
         protected abstract ValueTask DisposeAsync(T context);
