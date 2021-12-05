@@ -26,7 +26,7 @@ namespace Nito.Disposables
         protected override void Dispose(object context)
         {
             var referenceCount = (ReferenceCount)context;
-            referenceCount.DecrementCount();
+            referenceCount.TryDecrementCount()?.Dispose();
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Nito.Disposables
             ReferenceCount referenceCount = null!;
             // Implementation note: IncrementCount always "succeeds" in updating the context since it always returns the same instance.
             // So, we know that IncrementCount will be called at most once. It may also be called zero times if this instance is disposed.
-            if (!TryUpdateContext(x => referenceCount = ((ReferenceCount)x).IncrementCount()))
+            if (!TryUpdateContext(x => referenceCount = ((ReferenceCount)x).TryIncrementCount() ? (ReferenceCount)x : null!))
                 return null;
             return new ReferenceCountedDisposable(referenceCount);
         }
@@ -58,36 +58,75 @@ namespace Nito.Disposables
         /// </summary>
         public IAddReference AddWeakReference() => TryAddWeakReference() ?? AddReferenceExtensions.ThrowDisposedTargetException();
 
-        private sealed class ReferenceCount
+        private interface IReferenceCountStrategy
         {
-            private readonly IDisposable? _disposable;
+            IReferenceCount? TryFindAndIncrementReferenceCount(IDisposable disposable);
+        }
+
+        private sealed class NewReferenceCountStrategy : IReferenceCountStrategy
+        {
+            public IReferenceCount? TryFindAndIncrementReferenceCount(IDisposable disposable) => new ReferenceCount(disposable);
+        }
+
+        private sealed class SelfReferenceCountStrategy : IReferenceCountStrategy
+        {
+            public IReferenceCount? TryFindAndIncrementReferenceCount(IDisposable disposable) => disposable as IReferenceCount;
+        }
+
+        //private sealed class AttachedReferenceCountStrategy : IReferenceCountStrategy
+        //{
+        //    public IReferenceCount? TryFindAndIncrementReferenceCount(IDisposable disposable) => TODO;
+        //}
+
+        /// <summary>
+        /// A reference count for an underlying disposable.
+        /// </summary>
+        private interface IReferenceCount
+        {
+            /// <summary>
+            /// Increments the reference count and returns <c>true</c>. If the reference count has already reached zero, returns <c>false</c>.
+            /// </summary>
+            bool TryIncrementCount();
+
+            /// <summary>
+            /// Decrements the reference count and returns <c>null</c>. If this call causes the reference count to reach zero, returns the underlying disposable.
+            /// </summary>
+            IDisposable? TryDecrementCount();
+
+            /// <summary>
+            /// Returns the underlying disposable. Returns <c>null</c> if the reference count has reached zero.
+            /// </summary>
+            IDisposable? TryGetTarget();
+        }
+
+        private sealed class ReferenceCount : IReferenceCount
+        {
+            private IDisposable? _disposable;
             private int _count;
 
             public ReferenceCount(IDisposable? disposable)
-                : this(disposable, 1)
-            {
-            }
-
-            private ReferenceCount(IDisposable? disposable, int count)
             {
                 _disposable = disposable;
-                _count = count;
+                _count = 1;
             }
 
-            public ReferenceCount IncrementCount() =>
-                TryIncrementCount() ?? throw new InvalidOperationException($"Internal error during {nameof(IncrementCount)} in {nameof(ReferenceCountedDisposable)}");
+            public bool TryIncrementCount() => TryUpdate(x => x == 0 ? null : x + 1) != null;
 
-            public ReferenceCount? TryIncrementCount() => TryUpdate(x => x == 0 ? null : x + 1) == null ? null : this;
-
-            public int? TryDecrementCount() => TryUpdate(x => x == 0 ? null : x - 1);
-
-            public void DecrementCount()
+            public IDisposable? TryDecrementCount()
             {
-                var result = TryDecrementCount();
-                if (result == null)
-                    throw new InvalidOperationException($"Internal error during {nameof(DecrementCount)} in {nameof(ReferenceCountedDisposable)}");
-                if (result == 0)
-                    _disposable?.Dispose();
+                var updateResult = TryUpdate(x => x == 0 ? null : x - 1);
+                if (updateResult != 0)
+                    return null;
+                return Interlocked.Exchange(ref _disposable, null);
+            }
+
+            public IDisposable? TryGetTarget()
+            {
+                var result = Interlocked.CompareExchange(ref _disposable, null, null);
+                var count = Interlocked.CompareExchange(ref _count, 0, 0);
+                if (count == 0)
+                    return null;
+                return result;
             }
 
             private int? TryUpdate(Func<int, int?> func)
@@ -131,7 +170,7 @@ namespace Nito.Disposables
             {
                 if (!_weakReference.TryGetTarget(out var referenceCount))
                     return null;
-                if (referenceCount.TryIncrementCount() == null)
+                if (!referenceCount.TryIncrementCount())
                     return null;
                 return new(referenceCount);
             }
