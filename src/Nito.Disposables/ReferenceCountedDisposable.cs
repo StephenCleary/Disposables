@@ -49,22 +49,12 @@ namespace Nito.Disposables
         public static ReferenceCountedDisposable Create(IDisposable? disposable) => new (disposable);
 
         /// <summary>
-        /// Adds an uncounted reference to this reference counted disposable. If the underlying disposable has already been disposed, returns <c>null</c>.
-        /// </summary>
-        public IAddReference? TryAddUncountedReference() => UncountedReference.TryCreate(this);
-
-        /// <summary>
-        /// Adds an uncounted reference to this reference counted disposable. Throws an exception if the underlying disposable has already been disposed.
-        /// </summary>
-        public IAddReference AddUncountedReference() => TryAddUncountedReference() ?? AddReferenceExtensions.ThrowDisposedTargetException();
-
-        /// <summary>
-        /// Adds a weak reference to this reference counted disposable. If the underlying disposable has already been disposed, returns <c>null</c>.
+        /// Adds a weak reference to this reference counted disposable. If this <see cref="ReferenceCountedDisposable"/> has already been disposed, returns <c>null</c>.
         /// </summary>
         public IAddReference? TryAddWeakReference() => WeakReference.TryCreate(this);
 
         /// <summary>
-        /// Adds a weak reference to this reference counted disposable. Throws an exception if the underlying disposable has already been disposed.
+        /// Adds a weak reference to this reference counted disposable. Throws an exception if this <see cref="ReferenceCountedDisposable"/> has already been disposed.
         /// </summary>
         public IAddReference AddWeakReference() => TryAddWeakReference() ?? AddReferenceExtensions.ThrowDisposedTargetException();
 
@@ -114,38 +104,6 @@ namespace Nito.Disposables
                     if (original == result)
                         return updatedCount.Value;
                 }
-            }
-        }
-
-        private sealed class UncountedReference : IAddReference
-        {
-            private readonly ReferenceCount _referenceCount;
-
-            private UncountedReference(ReferenceCount referenceCount)
-            {
-                _referenceCount = referenceCount;
-            }
-
-            public static UncountedReference? TryCreate(ReferenceCountedDisposable referenceCountedDisposable)
-            {
-                _ = referenceCountedDisposable ?? throw new ArgumentNullException(nameof(referenceCountedDisposable));
-                ReferenceCount referenceCount = null!;
-                // Implementation note: TryUpdateContext always "succeeds" in updating the context since the lambda always returns the same instance.
-                // The only way this isn't the case is if the reference counted disposable has been disposed.
-                if (!referenceCountedDisposable.TryUpdateContext(x => referenceCount = (ReferenceCount)x))
-                    return null;
-                return new(referenceCount);
-            }
-
-            // TODO: we want to allow incrementing this to change an uncounted reference into a reference counted disposable,
-            //  but that can't be safely done using Interlocked. Perhaps if we used `lock`. Or perhaps our BoundAction needs another primitive operation.
-            // Or perhaps the ReferenceCount itself should be a SingleDisposable<int>?
-
-            public ReferenceCountedDisposable? TryAddReference()
-            {
-                if (_referenceCount.TryIncrementCount() == null)
-                    return null;
-                return new(_referenceCount);
             }
         }
 
