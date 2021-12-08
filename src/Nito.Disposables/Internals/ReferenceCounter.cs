@@ -4,26 +4,27 @@ using System.Threading;
 namespace Nito.Disposables.Internals
 {
     /// <summary>
-    /// Default implementation of <see cref="IReferenceCounter"/>
+    /// Default implementation of <see cref="IReferenceCounter{T}"/>
     /// </summary>
-    public sealed class ReferenceCounter : IReferenceCounter
+    public sealed class ReferenceCounter<T> : IReferenceCounter<T>
+        where T : class, IDisposable
     {
-        private IDisposable? _disposable;
+        private T? _disposable;
         private int _count;
 
         /// <summary>
         /// Creates a new reference counter with a reference count of 1 referencing the specified disposable.
         /// </summary>
         /// <param name="disposable"></param>
-        public ReferenceCounter(IDisposable? disposable)
+        public ReferenceCounter(T? disposable)
         {
             _disposable = disposable;
             _count = 1;
         }
 
-        bool IReferenceCounter.TryIncrementCount() => TryUpdate(x => x == 0 ? null : x + 1) != null;
+        bool IReferenceCounter<T>.TryIncrementCount() => TryUpdate(x => x == 0 ? null : x + 1) != null;
 
-        IDisposable? IReferenceCounter.TryDecrementCount()
+        IDisposable? IReferenceCounter<T>.TryDecrementCount()
         {
             var updateResult = TryUpdate(x => x == 0 ? null : x - 1);
             if (updateResult != 0)
@@ -31,7 +32,7 @@ namespace Nito.Disposables.Internals
             return Interlocked.Exchange(ref _disposable, null);
         }
 
-        IDisposable? IReferenceCounter.TryGetTarget()
+        T? IReferenceCounter<T>.TryGetTarget()
         {
             var result = Interlocked.CompareExchange(ref _disposable, null, null);
             var count = Interlocked.CompareExchange(ref _count, 0, 0);

@@ -14,11 +14,11 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
         public ReferenceCountedDisposable(IDisposable? disposable)
-            : this(new ReferenceCounter(disposable))
+            : this(new ReferenceCounter<IDisposable>(disposable))
         {
         }
 
-        private ReferenceCountedDisposable(IReferenceCounter referenceCount)
+        private ReferenceCountedDisposable(IReferenceCounter<IDisposable> referenceCount)
             : base(referenceCount)
         {
         }
@@ -26,7 +26,7 @@ namespace Nito.Disposables
         /// <inheritdoc />
         protected override void Dispose(object context)
         {
-            var referenceCount = (IReferenceCounter)context;
+            var referenceCount = (IReferenceCounter<IDisposable>)context;
             referenceCount.TryDecrementCount()?.Dispose();
         }
 
@@ -35,10 +35,10 @@ namespace Nito.Disposables
         /// </summary>
         public ReferenceCountedDisposable? TryAddReference()
         {
-            IReferenceCounter referenceCount = null!;
+            IReferenceCounter<IDisposable> referenceCount = null!;
             // Implementation note: IncrementCount always "succeeds" in updating the context since it always returns the same instance.
             // So, we know that IncrementCount will be called at most once. It may also be called zero times if this instance is disposed.
-            if (!TryUpdateContext(x => referenceCount = ((IReferenceCounter)x).TryIncrementCount() ? (IReferenceCounter)x : null!))
+            if (!TryUpdateContext(x => referenceCount = ((IReferenceCounter<IDisposable>)x).TryIncrementCount() ? (IReferenceCounter<IDisposable>)x : null!))
                 return null;
             return new ReferenceCountedDisposable(referenceCount);
         }
@@ -59,26 +59,11 @@ namespace Nito.Disposables
         /// </summary>
         public IAddReference AddWeakReference() => TryAddWeakReference() ?? AddReferenceExtensions.ThrowDisposedTargetException();
 
-        private interface IReferenceCountStrategy
-        {
-            IReferenceCounter? TryFindAndIncrementReferenceCount(IDisposable disposable);
-        }
-
-        private sealed class NewReferenceCountStrategy : IReferenceCountStrategy
-        {
-            public IReferenceCounter? TryFindAndIncrementReferenceCount(IDisposable disposable) => new ReferenceCounter(disposable);
-        }
-
-        private sealed class SelfReferenceCountStrategy : IReferenceCountStrategy
-        {
-            public IReferenceCounter? TryFindAndIncrementReferenceCount(IDisposable disposable) => disposable as IReferenceCounter;
-        }
-
         private sealed class WeakReference : IAddReference
         {
-            private readonly WeakReference<IReferenceCounter> _weakReference;
+            private readonly WeakReference<IReferenceCounter<IDisposable>> _weakReference;
 
-            private WeakReference(IReferenceCounter referenceCount)
+            private WeakReference(IReferenceCounter<IDisposable> referenceCount)
             {
                 _weakReference = new(referenceCount);
             }
@@ -86,10 +71,10 @@ namespace Nito.Disposables
             public static WeakReference? TryCreate(ReferenceCountedDisposable referenceCountedDisposable)
             {
                 _ = referenceCountedDisposable ?? throw new ArgumentNullException(nameof(referenceCountedDisposable));
-                ReferenceCounter referenceCount = null!;
+                IReferenceCounter<IDisposable> referenceCount = null!;
                 // Implementation note: TryUpdateContext always "succeeds" in updating the context since the lambda always returns the same instance.
                 // The only way this isn't the case is if the reference counted disposable has been disposed.
-                if (!referenceCountedDisposable.TryUpdateContext(x => referenceCount = (ReferenceCounter)x))
+                if (!referenceCountedDisposable.TryUpdateContext(x => referenceCount = (IReferenceCounter<IDisposable>)x))
                     return null;
                 return new(referenceCount);
             }
