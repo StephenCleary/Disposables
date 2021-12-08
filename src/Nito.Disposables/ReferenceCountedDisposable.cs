@@ -13,11 +13,11 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
         public ReferenceCountedDisposable(IDisposable? disposable)
-            : this(new ReferenceCount(disposable))
+            : this(new ReferenceCounter(disposable))
         {
         }
 
-        private ReferenceCountedDisposable(ReferenceCount referenceCount)
+        private ReferenceCountedDisposable(ReferenceCounter referenceCount)
             : base(referenceCount)
         {
         }
@@ -25,7 +25,7 @@ namespace Nito.Disposables
         /// <inheritdoc />
         protected override void Dispose(object context)
         {
-            var referenceCount = (ReferenceCount)context;
+            var referenceCount = (ReferenceCounter)context;
             referenceCount.TryDecrementCount()?.Dispose();
         }
 
@@ -34,10 +34,10 @@ namespace Nito.Disposables
         /// </summary>
         public ReferenceCountedDisposable? TryAddReference()
         {
-            ReferenceCount referenceCount = null!;
+            ReferenceCounter referenceCount = null!;
             // Implementation note: IncrementCount always "succeeds" in updating the context since it always returns the same instance.
             // So, we know that IncrementCount will be called at most once. It may also be called zero times if this instance is disposed.
-            if (!TryUpdateContext(x => referenceCount = ((ReferenceCount)x).TryIncrementCount() ? (ReferenceCount)x : null!))
+            if (!TryUpdateContext(x => referenceCount = ((ReferenceCounter)x).TryIncrementCount() ? (ReferenceCounter)x : null!))
                 return null;
             return new ReferenceCountedDisposable(referenceCount);
         }
@@ -60,17 +60,17 @@ namespace Nito.Disposables
 
         private interface IReferenceCountStrategy
         {
-            IReferenceCount? TryFindAndIncrementReferenceCount(IDisposable disposable);
+            IReferenceCounter? TryFindAndIncrementReferenceCount(IDisposable disposable);
         }
 
         private sealed class NewReferenceCountStrategy : IReferenceCountStrategy
         {
-            public IReferenceCount? TryFindAndIncrementReferenceCount(IDisposable disposable) => new ReferenceCount(disposable);
+            public IReferenceCounter? TryFindAndIncrementReferenceCount(IDisposable disposable) => new ReferenceCounter(disposable);
         }
 
         private sealed class SelfReferenceCountStrategy : IReferenceCountStrategy
         {
-            public IReferenceCount? TryFindAndIncrementReferenceCount(IDisposable disposable) => disposable as IReferenceCount;
+            public IReferenceCounter? TryFindAndIncrementReferenceCount(IDisposable disposable) => disposable as IReferenceCounter;
         }
 
         //private sealed class AttachedReferenceCountStrategy : IReferenceCountStrategy
@@ -81,7 +81,7 @@ namespace Nito.Disposables
         /// <summary>
         /// A reference count for an underlying disposable.
         /// </summary>
-        private interface IReferenceCount
+        private interface IReferenceCounter
         {
             /// <summary>
             /// Increments the reference count and returns <c>true</c>. If the reference count has already reached zero, returns <c>false</c>.
@@ -99,12 +99,12 @@ namespace Nito.Disposables
             IDisposable? TryGetTarget();
         }
 
-        private sealed class ReferenceCount : IReferenceCount
+        private sealed class ReferenceCounter : IReferenceCounter
         {
             private IDisposable? _disposable;
             private int _count;
 
-            public ReferenceCount(IDisposable? disposable)
+            public ReferenceCounter(IDisposable? disposable)
             {
                 _disposable = disposable;
                 _count = 1;
@@ -148,9 +148,9 @@ namespace Nito.Disposables
 
         private sealed class WeakReference : IAddReference
         {
-            private readonly WeakReference<ReferenceCount> _weakReference;
+            private readonly WeakReference<ReferenceCounter> _weakReference;
 
-            private WeakReference(ReferenceCount referenceCount)
+            private WeakReference(ReferenceCounter referenceCount)
             {
                 _weakReference = new(referenceCount);
             }
@@ -158,10 +158,10 @@ namespace Nito.Disposables
             public static WeakReference? TryCreate(ReferenceCountedDisposable referenceCountedDisposable)
             {
                 _ = referenceCountedDisposable ?? throw new ArgumentNullException(nameof(referenceCountedDisposable));
-                ReferenceCount referenceCount = null!;
+                ReferenceCounter referenceCount = null!;
                 // Implementation note: TryUpdateContext always "succeeds" in updating the context since the lambda always returns the same instance.
                 // The only way this isn't the case is if the reference counted disposable has been disposed.
-                if (!referenceCountedDisposable.TryUpdateContext(x => referenceCount = (ReferenceCount)x))
+                if (!referenceCountedDisposable.TryUpdateContext(x => referenceCount = (ReferenceCounter)x))
                     return null;
                 return new(referenceCount);
             }
