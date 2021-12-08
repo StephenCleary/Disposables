@@ -12,12 +12,13 @@ namespace Nito.Disposables
         /// <summary>
         /// Adds a (strong) reference to this reference counted disposable. Throws an exception if the underlying disposable has already been disposed.
         /// </summary>
-        public static ReferenceCountedDisposable AddReference(this IAddReference addReference)
+        public static IReferenceCountedDisposable<T> AddReference<T>(this IReferenceCounterReference<T> addReference)
+            where T : class, IDisposable
         {
             _ = addReference ?? throw new ArgumentNullException(nameof(addReference));
-            return addReference.TryAddReference() ?? ThrowDisposedTargetException();
+            return addReference.TryAddReference() ?? ThrowDisposedTargetException<IReferenceCountedDisposable<T>>();
         }
 
-        internal static ReferenceCountedDisposable ThrowDisposedTargetException() => throw new InvalidOperationException("AddReference called for a disposed target.");
+        internal static T ThrowDisposedTargetException<T>() => throw new InvalidOperationException("AddReference called for a disposed target.");
     }
 }
