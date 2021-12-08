@@ -14,6 +14,11 @@ namespace Nito.Disposables
         /// Adds a reference to this reference counted disposable. If the underlying disposable has already been disposed, returns <c>null</c>.
         /// </summary>
         IReferenceCountedDisposable<T>? TryAddReference();
+
+        /// <summary>
+        /// Attempts to get the target object.
+        /// </summary>
+        T? TryGetTarget();
     }
 
     /// <summary>
@@ -45,9 +50,9 @@ namespace Nito.Disposables
         /// Creates a new disposable that disposes <paramref name="disposable"/> when all reference counts have been disposed.
         /// </summary>
         /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
-        public static ReferenceCountedDisposable<T> Create<T>(T? disposable)
+        public static IReferenceCountedDisposable<T> Create<T>(T? disposable)
             where T : class, IDisposable
-            => new(disposable);
+            => new ReferenceCountedDisposable<T>(disposable);
     }
 
     /// <summary>
@@ -77,6 +82,9 @@ namespace Nito.Disposables
             referenceCount.TryDecrementCount()?.Dispose();
         }
 
+        /// <inheritdoc />
+        public T? TryGetTarget() => TryGetContext()?.TryGetTarget();
+
         /// <summary>
         /// Adds a (strong) reference to this reference counted disposable. If the underlying disposable has already been disposed, returns <c>null</c>.
         /// </summary>
@@ -99,6 +107,16 @@ namespace Nito.Disposables
         /// Adds a weak reference to this reference counted disposable. Throws an exception if this <see cref="ReferenceCountedDisposable"/> has already been disposed.
         /// </summary>
         public IWeakReferenceCountedDisposable<T> AddWeakReference() => TryAddWeakReference() ?? AddReferenceExtensions.ThrowDisposedTargetException<IWeakReferenceCountedDisposable<T>>();
+
+        private IReferenceCounter<T>? TryGetContext()
+        {
+            IReferenceCounter<T>? result = null;
+            // Implementation note: IncrementCount always "succeeds" in updating the context since it always returns the same instance.
+            // So, we know that IncrementCount will be called at most once. It may also be called zero times if this instance is disposed.
+            if (!TryUpdateContext(x => result = (IReferenceCounter<T>)x))
+                return null;
+            return result;
+        }
 
         private sealed class WeakReference : IWeakReferenceCountedDisposable<T>
         {
@@ -127,6 +145,13 @@ namespace Nito.Disposables
                 if (!referenceCount.TryIncrementCount())
                     return null;
                 return new ReferenceCountedDisposable<T>(referenceCount);
+            }
+
+            public T? TryGetTarget()
+            {
+                if (!_weakReference.TryGetTarget(out var referenceCounter))
+                    return null;
+                return referenceCounter.TryGetTarget();
             }
         }
     }
