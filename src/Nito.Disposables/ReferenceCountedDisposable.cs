@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Nito.Disposables.Internals;
 
 namespace Nito.Disposables
 {
@@ -17,7 +18,7 @@ namespace Nito.Disposables
         {
         }
 
-        private ReferenceCountedDisposable(ReferenceCounter referenceCount)
+        private ReferenceCountedDisposable(IReferenceCounter referenceCount)
             : base(referenceCount)
         {
         }
@@ -25,7 +26,7 @@ namespace Nito.Disposables
         /// <inheritdoc />
         protected override void Dispose(object context)
         {
-            var referenceCount = (ReferenceCounter)context;
+            var referenceCount = (IReferenceCounter)context;
             referenceCount.TryDecrementCount()?.Dispose();
         }
 
@@ -34,10 +35,10 @@ namespace Nito.Disposables
         /// </summary>
         public ReferenceCountedDisposable? TryAddReference()
         {
-            ReferenceCounter referenceCount = null!;
+            IReferenceCounter referenceCount = null!;
             // Implementation note: IncrementCount always "succeeds" in updating the context since it always returns the same instance.
             // So, we know that IncrementCount will be called at most once. It may also be called zero times if this instance is disposed.
-            if (!TryUpdateContext(x => referenceCount = ((ReferenceCounter)x).TryIncrementCount() ? (ReferenceCounter)x : null!))
+            if (!TryUpdateContext(x => referenceCount = ((IReferenceCounter)x).TryIncrementCount() ? (IReferenceCounter)x : null!))
                 return null;
             return new ReferenceCountedDisposable(referenceCount);
         }
@@ -73,84 +74,11 @@ namespace Nito.Disposables
             public IReferenceCounter? TryFindAndIncrementReferenceCount(IDisposable disposable) => disposable as IReferenceCounter;
         }
 
-        //private sealed class AttachedReferenceCountStrategy : IReferenceCountStrategy
-        //{
-        //    public IReferenceCount? TryFindAndIncrementReferenceCount(IDisposable disposable) => TODO;
-        //}
-
-        /// <summary>
-        /// A reference count for an underlying disposable.
-        /// </summary>
-        private interface IReferenceCounter
-        {
-            /// <summary>
-            /// Increments the reference count and returns <c>true</c>. If the reference count has already reached zero, returns <c>false</c>.
-            /// </summary>
-            bool TryIncrementCount();
-
-            /// <summary>
-            /// Decrements the reference count and returns <c>null</c>. If this call causes the reference count to reach zero, returns the underlying disposable.
-            /// </summary>
-            IDisposable? TryDecrementCount();
-
-            /// <summary>
-            /// Returns the underlying disposable. Returns <c>null</c> if the reference count has reached zero.
-            /// </summary>
-            IDisposable? TryGetTarget();
-        }
-
-        private sealed class ReferenceCounter : IReferenceCounter
-        {
-            private IDisposable? _disposable;
-            private int _count;
-
-            public ReferenceCounter(IDisposable? disposable)
-            {
-                _disposable = disposable;
-                _count = 1;
-            }
-
-            public bool TryIncrementCount() => TryUpdate(x => x == 0 ? null : x + 1) != null;
-
-            public IDisposable? TryDecrementCount()
-            {
-                var updateResult = TryUpdate(x => x == 0 ? null : x - 1);
-                if (updateResult != 0)
-                    return null;
-                return Interlocked.Exchange(ref _disposable, null);
-            }
-
-            public IDisposable? TryGetTarget()
-            {
-                var result = Interlocked.CompareExchange(ref _disposable, null, null);
-                var count = Interlocked.CompareExchange(ref _count, 0, 0);
-                if (count == 0)
-                    return null;
-                return result;
-            }
-
-            private int? TryUpdate(Func<int, int?> func)
-            {
-                while (true)
-                {
-                    var original = Interlocked.CompareExchange(ref _count, 0, 0);
-                    if (original == 0)
-                        return null;
-                    var updatedCount = func(original);
-                    if (updatedCount == null)
-                        return null;
-                    var result = Interlocked.CompareExchange(ref _count, updatedCount.Value, original);
-                    if (original == result)
-                        return updatedCount.Value;
-                }
-            }
-        }
-
         private sealed class WeakReference : IAddReference
         {
-            private readonly WeakReference<ReferenceCounter> _weakReference;
+            private readonly WeakReference<IReferenceCounter> _weakReference;
 
-            private WeakReference(ReferenceCounter referenceCount)
+            private WeakReference(IReferenceCounter referenceCount)
             {
                 _weakReference = new(referenceCount);
             }
