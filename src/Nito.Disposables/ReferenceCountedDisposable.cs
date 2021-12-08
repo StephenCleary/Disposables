@@ -5,6 +5,38 @@ using Nito.Disposables.Internals;
 namespace Nito.Disposables
 {
     /// <summary>
+    /// An instance that refers to an underlying target and can add reference counts to the counter for that target.
+    /// </summary>
+    public interface IReferenceCounterReference<out T>
+        where T : class, IDisposable
+    {
+        /// <summary>
+        /// Adds a reference to this reference counted disposable. If the underlying disposable has already been disposed, returns <c>null</c>.
+        /// </summary>
+        IReferenceCountedDisposable<T>? TryAddReference();
+    }
+
+    /// <summary>
+    /// An instance that represents a reference count.
+    /// </summary>
+    public interface IReferenceCountedDisposable<out T> : IDisposable, IReferenceCounterReference<T>
+        where T : class, IDisposable
+    {
+        /// <summary>
+        /// Adds a weak reference to this reference counted disposable. If this instance has already been disposed, returns <c>null</c>.
+        /// </summary>
+        IWeakReferenceCountedDisposable<T>? TryAddWeakReference();
+    }
+
+    /// <summary>
+    /// An instance that represents an uncounted weak reference.
+    /// </summary>
+    public interface IWeakReferenceCountedDisposable<out T> : IReferenceCounterReference<T>
+        where T : class, IDisposable
+    {
+    }
+
+    /// <summary>
     /// Equivalent to <see cref="Disposable"/>.
     /// </summary>
     public sealed class ReferenceCountedDisposable : SingleDisposable<object>, IAddReference
