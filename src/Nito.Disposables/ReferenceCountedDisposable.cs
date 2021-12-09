@@ -59,42 +59,44 @@ namespace Nito.Disposables
             => new ReferenceCountedDisposable<T>(new ReferenceCounter<T>(disposable));
     }
 
-    internal sealed class ReferenceCountedDisposable<T> : SingleDisposable<object>, IReferenceCountedDisposable<T>
+    internal sealed class ReferenceCountedDisposable<T> : SingleDisposable<IReferenceCounter<T>>, IReferenceCountedDisposable<T>
         where T : class, IDisposable
     {
-        public ReferenceCountedDisposable(IReferenceCounter<T> referenceCount)
-            : base(referenceCount)
+        /// <summary>
+        /// Initializes a reference counted disposable that refers to the specified reference count. The specified reference count must have already been incremented for this instance.
+        /// </summary>
+        public ReferenceCountedDisposable(IReferenceCounter<T> referenceCounter)
+            : base(referenceCounter)
         {
         }
 
-        protected override void Dispose(object context)
+        protected override void Dispose(IReferenceCounter<T> referenceCounter)
         {
-            var referenceCount = (IReferenceCounter<T>)context;
-            referenceCount.TryDecrementCount()?.Dispose();
+            referenceCounter.TryDecrementCount()?.Dispose();
         }
 
-        T IReferenceCountedDisposable<T>.Target => Context.TryGetTarget() ?? throw new ObjectDisposedException(nameof(ReferenceCountedDisposable<T>));
+        T IReferenceCountedDisposable<T>.Target => ReferenceCounter.TryGetTarget() ?? throw new ObjectDisposedException(nameof(ReferenceCountedDisposable<T>));
 
         IReferenceCountedDisposable<T> IReferenceCountedDisposable<T>.AddReference()
         {
-            var context = Context;
-            if (!context.TryIncrementCount())
+            var referenceCounter = ReferenceCounter;
+            if (!referenceCounter.TryIncrementCount())
                 throw new ObjectDisposedException(nameof(ReferenceCountedDisposable<T>));
-            return new ReferenceCountedDisposable<T>(context);
+            return new ReferenceCountedDisposable<T>(referenceCounter);
         }
 
-        public IWeakReferenceCountedDisposable<T> AddWeakReference() => new WeakReferenceCountedDisposable<T>(Context);
+        public IWeakReferenceCountedDisposable<T> AddWeakReference() => new WeakReferenceCountedDisposable<T>(ReferenceCounter);
 
-        private IReferenceCounter<T> Context
+        private IReferenceCounter<T> ReferenceCounter
         {
             get
             {
-                IReferenceCounter<T> result = null!;
+                IReferenceCounter<T> referenceCounter = null!;
                 // Implementation note: IncrementCount always "succeeds" in updating the context since it always returns the same instance.
                 // So, we know that IncrementCount will be called at most once. It may also be called zero times if this instance is disposed.
-                if (!TryUpdateContext(x => result = (IReferenceCounter<T>)x))
+                if (!TryUpdateContext(x => referenceCounter = x))
                     throw new ObjectDisposedException(nameof(ReferenceCountedDisposable<T>));
-                return result;
+                return referenceCounter;
             }
         }
     }
@@ -104,18 +106,18 @@ namespace Nito.Disposables
     {
         private readonly WeakReference<IReferenceCounter<T>> _weakReference;
 
-        public WeakReferenceCountedDisposable(IReferenceCounter<T> referenceCount)
+        public WeakReferenceCountedDisposable(IReferenceCounter<T> referenceCounter)
         {
-            _weakReference = new(referenceCount);
+            _weakReference = new(referenceCounter);
         }
 
         IReferenceCountedDisposable<T>? IWeakReferenceCountedDisposable<T>.TryAddReference()
         {
-            if (!_weakReference.TryGetTarget(out var referenceCount))
+            if (!_weakReference.TryGetTarget(out var referenceCounter))
                 return null;
-            if (!referenceCount.TryIncrementCount())
+            if (!referenceCounter.TryIncrementCount())
                 return null;
-            return new ReferenceCountedDisposable<T>(referenceCount);
+            return new ReferenceCountedDisposable<T>(referenceCounter);
         }
 
         T? IWeakReferenceCountedDisposable<T>.TryGetTarget()
