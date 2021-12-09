@@ -83,7 +83,7 @@ namespace Nito.Disposables
             return new ReferenceCountedDisposable<T>(context);
         }
 
-        public IWeakReferenceCountedDisposable<T> AddWeakReference() => new WeakReference(Context);
+        public IWeakReferenceCountedDisposable<T> AddWeakReference() => new WeakReferenceCountedDisposable<T>(Context);
 
         private IReferenceCounter<T> Context
         {
@@ -97,31 +97,32 @@ namespace Nito.Disposables
                 return result;
             }
         }
+    }
 
-        private sealed class WeakReference : IWeakReferenceCountedDisposable<T>
+    internal sealed class WeakReferenceCountedDisposable<T> : IWeakReferenceCountedDisposable<T>
+        where T : class, IDisposable
+    {
+        private readonly WeakReference<IReferenceCounter<T>> _weakReference;
+
+        public WeakReferenceCountedDisposable(IReferenceCounter<T> referenceCount)
         {
-            private readonly WeakReference<IReferenceCounter<T>> _weakReference;
+            _weakReference = new(referenceCount);
+        }
 
-            public WeakReference(IReferenceCounter<T> referenceCount)
-            {
-                _weakReference = new(referenceCount);
-            }
+        IReferenceCountedDisposable<T>? IWeakReferenceCountedDisposable<T>.TryAddReference()
+        {
+            if (!_weakReference.TryGetTarget(out var referenceCount))
+                return null;
+            if (!referenceCount.TryIncrementCount())
+                return null;
+            return new ReferenceCountedDisposable<T>(referenceCount);
+        }
 
-            IReferenceCountedDisposable<T>? IWeakReferenceCountedDisposable<T>.TryAddReference()
-            {
-                if (!_weakReference.TryGetTarget(out var referenceCount))
-                    return null;
-                if (!referenceCount.TryIncrementCount())
-                    return null;
-                return new ReferenceCountedDisposable<T>(referenceCount);
-            }
-
-            T? IWeakReferenceCountedDisposable<T>.TryGetTarget()
-            {
-                if (!_weakReference.TryGetTarget(out var referenceCounter))
-                    return null;
-                return referenceCounter.TryGetTarget();
-            }
+        T? IWeakReferenceCountedDisposable<T>.TryGetTarget()
+        {
+            if (!_weakReference.TryGetTarget(out var referenceCounter))
+                return null;
+            return referenceCounter.TryGetTarget();
         }
     }
 }
