@@ -22,11 +22,11 @@ namespace Nito.Disposables.Internals
             _count = 1;
         }
 
-        bool IReferenceCounter<T>.TryIncrementCount() => TryUpdate(x => x == 0 ? null : x + 1) != null;
+        bool IReferenceCounter<T>.TryIncrementCount() => TryUpdate(x => x + 1) != null;
 
         IDisposable? IReferenceCounter<T>.TryDecrementCount()
         {
-            var updateResult = TryUpdate(x => x == 0 ? null : x - 1);
+            var updateResult = TryUpdate(x => x - 1);
             if (updateResult != 0)
                 return null;
             return Interlocked.Exchange(ref _disposable, null);
@@ -41,7 +41,7 @@ namespace Nito.Disposables.Internals
             return result;
         }
 
-        private int? TryUpdate(Func<int, int?> func)
+        private int? TryUpdate(Func<int, int> func)
         {
             while (true)
             {
@@ -49,11 +49,9 @@ namespace Nito.Disposables.Internals
                 if (original == 0)
                     return null;
                 var updatedCount = func(original);
-                if (updatedCount == null)
-                    return null;
-                var result = Interlocked.CompareExchange(ref _count, updatedCount.Value, original);
+                var result = Interlocked.CompareExchange(ref _count, updatedCount, original);
                 if (original == result)
-                    return updatedCount.Value;
+                    return updatedCount;
             }
         }
     }
