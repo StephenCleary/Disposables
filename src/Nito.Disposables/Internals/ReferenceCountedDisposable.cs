@@ -19,10 +19,7 @@ namespace Nito.Disposables.Internals
         }
 
         /// <inheritdoc/>
-        protected override void Dispose(IReferenceCounter<T> referenceCounter)
-        {
-            referenceCounter.TryDecrementCount()?.Dispose();
-        }
+        protected override void Dispose(IReferenceCounter<T> referenceCounter) => referenceCounter.TryDecrementCount()?.Dispose();
 
         T IReferenceCountedDisposable<T>.Target => ReferenceCounter.TryGetTarget() ?? throw new ObjectDisposedException(nameof(ReferenceCountedDisposable<T>));
 

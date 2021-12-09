@@ -15,10 +15,7 @@ namespace Nito.Disposables.Internals
         /// <summary>
         /// Creates an instance that weakly references the specified reference counter. The specified reference counter should not be incremented.
         /// </summary>
-        public WeakReferenceCountedDisposable(IReferenceCounter<T> referenceCounter)
-        {
-            _weakReference = new(referenceCounter);
-        }
+        public WeakReferenceCountedDisposable(IReferenceCounter<T> referenceCounter) => _weakReference = new(referenceCounter);
 
         IReferenceCountedDisposable<T>? IWeakReferenceCountedDisposable<T>.TryAddReference()
         {
