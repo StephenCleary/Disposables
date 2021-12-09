@@ -33,6 +33,6 @@ namespace Nito.Disposables
             where T : class, IDisposable
             => new ReferenceCountedDisposable<T>(new ReferenceCounter<T>(disposable));
 
-        private static readonly ConditionalWeakTable<object, IReferenceCounter<IDisposable>> Ephemerons = new();
+        private static readonly ConditionalWeakTable<IDisposable, IReferenceCounter<IDisposable>> Ephemerons = new();
     }
 }
