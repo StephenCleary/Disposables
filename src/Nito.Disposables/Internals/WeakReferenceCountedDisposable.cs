@@ -17,7 +17,12 @@ namespace Nito.Disposables.Internals
         /// </summary>
         public WeakReferenceCountedDisposable(IReferenceCounter<IDisposable> referenceCounter)
         {
+            _ = referenceCounter ?? throw new ArgumentNullException(nameof(referenceCounter));
+
             _weakReference = new(referenceCounter);
+
+            // Ensure we can cast from the stored IDisposable to T.
+            _ = (T?) referenceCounter.TryGetTarget()!;
         }
 
         IReferenceCountedDisposable<T>? IWeakReferenceCountedDisposable<T>.TryAddReference()
