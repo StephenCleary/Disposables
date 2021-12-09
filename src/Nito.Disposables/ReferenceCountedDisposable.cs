@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Nito.Disposables.Internals;
 
 namespace Nito.Disposables
@@ -9,14 +10,28 @@ namespace Nito.Disposables
     /// </summary>
     public static class ReferenceCountedDisposable
     {
-        // TODO: Create<T>(T? disposable)
+        /// <summary>
+        /// Creates a new disposable that disposes <paramref name="disposable"/> when all reference counts have been disposed. This method creates a new reference counter to keep track of the reference counts.
+        /// </summary>
+        /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then the returned instance does nothing when it is disposed.</param>
+        public static IReferenceCountedDisposable<T> Create<T>(T? disposable)
+            where T : class, IDisposable
+        {
+            if (disposable == null)
+                return null!; // TODO: null object pattern.
+
+            var referenceCounter = Ephemerons.GetValue(disposable, _ => new ReferenceCounter<T>(disposable));
+            return new ReferenceCountedDisposable<T>((IReferenceCounter<T>) referenceCounter);
+        }
 
         /// <summary>
-        /// Creates a new disposable that disposes <paramref name="disposable"/> when all reference counts have been disposed.
+        /// Creates a new disposable that disposes <paramref name="disposable"/> when all reference counts have been disposed. This method creates a new reference counter to keep track of the reference counts.
         /// </summary>
-        /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
+        /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then the returned instance does nothing when it is disposed.</param>
         public static IReferenceCountedDisposable<T> CreateWithNewReferenceCounter<T>(T? disposable)
             where T : class, IDisposable
             => new ReferenceCountedDisposable<T>(new ReferenceCounter<T>(disposable));
+
+        private static readonly ConditionalWeakTable<object, IReferenceCounter<IDisposable>> Ephemerons = new();
     }
 }
