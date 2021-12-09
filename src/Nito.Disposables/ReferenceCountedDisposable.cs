@@ -11,7 +11,7 @@ namespace Nito.Disposables
     public static class ReferenceCountedDisposable
     {
         /// <summary>
-        /// Creates a new disposable that disposes <paramref name="disposable"/> when all reference counts have been disposed. This method creates a new reference counter to keep track of the reference counts.
+        /// Creates a new disposable that disposes <paramref name="disposable"/> when all reference counts have been disposed. This method uses attavhed (ephemeron) reference counters.
         /// </summary>
         /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then the returned instance does nothing when it is disposed.</param>
         public static IReferenceCountedDisposable<T> Create<T>(T? disposable)
