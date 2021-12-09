@@ -3,10 +3,9 @@
 namespace Nito.Disposables.Internals
 {
     /// <summary>
-    /// A reference count for an underlying disposable.
+    /// A reference count for an underlying target.
     /// </summary>
     public interface IReferenceCounter<out T>
-        where T : IDisposable
     {
         /// <summary>
         /// Increments the reference count and returns <c>true</c>. If the reference count has already reached zero, returns <c>false</c>.
@@ -14,12 +13,12 @@ namespace Nito.Disposables.Internals
         bool TryIncrementCount();
 
         /// <summary>
-        /// Decrements the reference count and returns <c>null</c>. If this call causes the reference count to reach zero, returns the underlying disposable.
+        /// Decrements the reference count and returns <c>null</c>. If this call causes the reference count to reach zero, returns the underlying target.
         /// </summary>
-        IDisposable? TryDecrementCount();
+        T? TryDecrementCount();
 
         /// <summary>
-        /// Returns the underlying disposable. Returns <c>null</c> if the reference count has reached zero.
+        /// Returns the underlying target. Returns <c>null</c> if the reference count has already reached zero.
         /// </summary>
         T? TryGetTarget();
     }
