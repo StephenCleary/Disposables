@@ -85,7 +85,7 @@ namespace Nito.Disposables
             return new ReferenceCountedDisposable<T>(referenceCounter);
         }
 
-        public IWeakReferenceCountedDisposable<T> AddWeakReference() => new WeakReferenceCountedDisposable<T>(ReferenceCounter);
+        IWeakReferenceCountedDisposable<T> IReferenceCountedDisposable<T>.AddWeakReference() => new WeakReferenceCountedDisposable<T>(ReferenceCounter);
 
         private IReferenceCounter<T> ReferenceCounter
         {
