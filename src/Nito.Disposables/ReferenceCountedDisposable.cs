@@ -1,47 +1,8 @@
 ﻿using System;
-using System.Threading;
 using Nito.Disposables.Internals;
 
 namespace Nito.Disposables
 {
-    /// <summary>
-    /// An instance that represents a reference count.
-    /// </summary>
-    public interface IReferenceCountedDisposable<out T> : IDisposable
-        where T : class, IDisposable
-    {
-        /// <summary>
-        /// Adds a weak reference to this reference counted disposable. Throws <see cref="ObjectDisposedException"/> if this instance is disposed.
-        /// </summary>
-        IWeakReferenceCountedDisposable<T> AddWeakReference();
-
-        /// <summary>
-        /// Returns a new reference to this reference counted disposable, incrementing the reference counter. Throws <see cref="ObjectDisposedException"/> if this instance is disposed.
-        /// </summary>
-        IReferenceCountedDisposable<T> AddReference();
-
-        /// <summary>
-        /// Gets the target object. Throws <see cref="ObjectDisposedException"/> if this instance is disposed.
-        /// </summary>
-        T Target { get; }
-    }
-
-    /// <summary>
-    /// An instance that represents an uncounted weak reference.
-    /// </summary>
-    public interface IWeakReferenceCountedDisposable<out T>
-        where T : class, IDisposable
-    {
-        /// <summary>
-        /// Adds a reference to this reference counted disposable. If the underlying disposable has already been disposed or garbage collected, returns <c>null</c>.
-        /// </summary>
-        IReferenceCountedDisposable<T>? TryAddReference();
-
-        /// <summary>
-        /// Attempts to get the target object. If the underlying disposable has already been disposed or garbage collected, returns <c>null</c>.
-        /// </summary>
-        T? TryGetTarget();
-    }
 
     /// <summary>
     /// Creation methods for reference counted disposables.
