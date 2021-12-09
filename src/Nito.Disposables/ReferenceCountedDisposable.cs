@@ -17,8 +17,9 @@ namespace Nito.Disposables
         public static IReferenceCountedDisposable<T> Create<T>(T? disposable)
             where T : class, IDisposable
         {
+            // We can't attach reference counters to null, so we use a sort of null object pattern here.
             if (disposable == null)
-                return null!; // TODO: null object pattern.
+                return CreateWithNewReferenceCounter(disposable);
 
             var referenceCounter = Ephemerons.GetValue(disposable, _ => new ReferenceCounter<T>(disposable));
             return new ReferenceCountedDisposable<T>((IReferenceCounter<T>) referenceCounter);
