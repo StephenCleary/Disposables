@@ -22,7 +22,7 @@ namespace Nito.Disposables
                 return CreateWithNewReferenceCounter(disposable);
 
             var referenceCounter = Ephemerons.GetValue(disposable, _ => new ReferenceCounter<T>(disposable));
-            return new ReferenceCountedDisposable<T>((IReferenceCounter<T>) referenceCounter);
+            return new ReferenceCountedDisposable<T>(referenceCounter);
         }
 
         /// <summary>
