@@ -3,7 +3,7 @@
 namespace Nito.Disposables
 {
     /// <summary>
-    /// An instance that represents a reference count.
+    /// An instance that represents a reference count. All members are threadsafe.
     /// </summary>
     public interface IReferenceCountedDisposable<out T> : IDisposable
         where T : class, IDisposable
