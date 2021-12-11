@@ -123,6 +123,28 @@ namespace UnitTests
             Assert.False(target.IsDisposed);
         }
 
+        [Fact]
+        public void MultiCreate_SameTarget_SharesReferenceCount()
+        {
+            var target = Disposable.Create(null);
+            var disposable = ReferenceCountedDisposable.Create(target);
+            var secondDisposable = ReferenceCountedDisposable.Create(target);
+            disposable.Dispose();
+            Assert.False(target.IsDisposed);
+        }
+
+        [Fact]
+        public void MultiCreate_SameTarget_AfterDisposal_SharesReferenceCount()
+        {
+            var target = Disposable.Create(null);
+            var disposable = ReferenceCountedDisposable.Create(target);
+            disposable.Dispose();
+            var secondDisposable = ReferenceCountedDisposable.Create(target);
+
+            // TODO: desired semantics???
+            _ = secondDisposable.Target;
+        }
+
         private sealed class UnsafeDisposable : IDisposable
         {
             public UnsafeDisposable(Action action) => _action = action;
