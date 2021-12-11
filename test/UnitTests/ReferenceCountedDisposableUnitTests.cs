@@ -134,15 +134,22 @@ namespace UnitTests
         }
 
         [Fact]
-        public void MultiCreate_SameTarget_AfterDisposal_SharesReferenceCount()
+        public void MultiTryCreate_SameTarget_AfterDisposal_ReturnsNull()
         {
             var target = Disposable.Create(null);
             var disposable = ReferenceCountedDisposable.Create(target);
             disposable.Dispose();
-            var secondDisposable = ReferenceCountedDisposable.Create(target);
+            var secondDisposable = ReferenceCountedDisposable.TryCreate(target);
+            Assert.Null(secondDisposable);
+        }
 
-            // TODO: desired semantics???
-            _ = secondDisposable.Target;
+        [Fact]
+        public void MultiCreate_SameTarget_AfterDisposal_Throws()
+        {
+            var target = Disposable.Create(null);
+            var disposable = ReferenceCountedDisposable.Create(target);
+            disposable.Dispose();
+            Assert.Throws<ObjectDisposedException>(() => ReferenceCountedDisposable.Create(target));
         }
 
         private sealed class UnsafeDisposable : IDisposable

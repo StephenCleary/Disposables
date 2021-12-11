@@ -15,6 +15,14 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then the returned instance does nothing when it is disposed.</param>
         public static IReferenceCountedDisposable<T> Create<T>(T? disposable)
+            where T : class, IDisposable =>
+            TryCreate(disposable) ?? throw new ObjectDisposedException(nameof(T));
+
+        /// <summary>
+        /// Creates a new disposable that disposes <paramref name="disposable"/> when all reference counts have been disposed. This method uses attached (ephemeron) reference counters.
+        /// </summary>
+        /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then the returned instance does nothing when it is disposed.</param>
+        public static IReferenceCountedDisposable<T>? TryCreate<T>(T? disposable)
             where T : class, IDisposable
         {
             // We can't attach reference counters to null, so we use a sort of null object pattern here.
@@ -24,7 +32,11 @@ namespace Nito.Disposables
             ReferenceCounter<IDisposable>? createdReferenceCounter = null;
             var referenceCounter = Ephemerons.GetValue(disposable, _ => createdReferenceCounter = new ReferenceCounter<IDisposable>(disposable));
             if (createdReferenceCounter != referenceCounter)
-                referenceCounter.TryIncrementCount();
+            {
+                if (!referenceCounter.TryIncrementCount())
+                    return null;
+            }
+
             return new ReferenceCountedDisposable<T>(referenceCounter);
         }
 
