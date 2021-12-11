@@ -154,6 +154,57 @@ namespace UnitTests
             Assert.Throws<ObjectDisposedException>(() => ReferenceCountedDisposable.Create(target));
         }
 
+        [Fact]
+        public void AddWeakReference_AfterDispose_Throws()
+        {
+            var target = Disposable.Create(null);
+            var disposable = ReferenceCountedDisposable.Create(target);
+            disposable.Dispose();
+            Assert.Throws<ObjectDisposedException>(() => disposable.AddWeakReference());
+        }
+
+        [Fact]
+        public void WeakReferenceTarget_ReturnsTarget()
+        {
+            var target = Disposable.Create(null);
+            var disposable = ReferenceCountedDisposable.Create(target);
+            var weakDisposable = disposable.AddWeakReference();
+            Assert.Equal(target, weakDisposable.TryGetTarget());
+            GC.KeepAlive(disposable);
+        }
+
+        [Fact]
+        public void WeakReference_IsNotCounted()
+        {
+            var target = Disposable.Create(null);
+            var disposable = ReferenceCountedDisposable.Create(target);
+            var weakDisposable = disposable.AddWeakReference();
+            disposable.Dispose();
+            Assert.Null(weakDisposable.TryGetTarget());
+            Assert.Null(weakDisposable.TryAddReference());
+            GC.KeepAlive(disposable);
+            GC.KeepAlive(target);
+        }
+
+        [Fact]
+        public void WeakReference_NotDisposed_CanIncrementCount()
+        {
+            var target = Disposable.Create(null);
+            var disposable = ReferenceCountedDisposable.Create(target);
+            var weakDisposable = disposable.AddWeakReference();
+            var secondDisposable = weakDisposable.TryAddReference();
+            Assert.NotNull(secondDisposable);
+            disposable.Dispose();
+            Assert.NotNull(weakDisposable.TryGetTarget());
+            Assert.False(target.IsDisposed);
+            secondDisposable.Dispose();
+            Assert.Null(weakDisposable.TryGetTarget());
+            Assert.Null(weakDisposable.TryAddReference());
+            GC.KeepAlive(secondDisposable);
+            GC.KeepAlive(disposable);
+            GC.KeepAlive(target);
+        }
+
         private sealed class UnsafeDisposable : IDisposable
         {
             public UnsafeDisposable(Action action) => _action = action;
