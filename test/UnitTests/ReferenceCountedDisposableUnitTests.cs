@@ -131,6 +131,8 @@ namespace UnitTests
             var secondDisposable = ReferenceCountedDisposable.Create(target);
             disposable.Dispose();
             Assert.False(target.IsDisposed);
+            secondDisposable.Dispose();
+            Assert.True(target.IsDisposed);
         }
 
         [Fact]
