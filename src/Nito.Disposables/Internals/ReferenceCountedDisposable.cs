@@ -31,7 +31,7 @@ namespace Nito.Disposables.Internals
         {
             var referenceCounter = ReferenceCounter;
             if (!referenceCounter.TryIncrementCount())
-                throw new ObjectDisposedException(nameof(ReferenceCountedDisposable<T>));
+                throw new ObjectDisposedException(nameof(ReferenceCountedDisposable<T>)); // cannot actually happen
             return new ReferenceCountedDisposable<T>(referenceCounter);
         }
 
@@ -42,8 +42,8 @@ namespace Nito.Disposables.Internals
             get
             {
                 IReferenceCounter<IDisposable> referenceCounter = null!;
-                // Implementation note: IncrementCount always "succeeds" in updating the context since it always returns the same instance.
-                // So, we know that IncrementCount will be called at most once. It may also be called zero times if this instance is disposed.
+                // Implementation note: this always "succeeds" in updating the context since it always returns the same instance.
+                // So, we know that this will be called at most once. It may also be called zero times if this instance is disposed.
                 if (!TryUpdateContext(x => referenceCounter = x))
                     throw new ObjectDisposedException(nameof(ReferenceCountedDisposable<T>));
                 return referenceCounter;
