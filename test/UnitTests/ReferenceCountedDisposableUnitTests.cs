@@ -205,6 +205,57 @@ namespace UnitTests
             GC.KeepAlive(target);
         }
 
+        [Fact]
+        public void CreateDerived_AfterBase_RefersToSameTarget()
+        {
+            var target = new DerivedDisposable();
+            var baseTarget = target as BaseDisposable;
+            var baseDisposable = ReferenceCountedDisposable.Create(baseTarget);
+            var derivedDisposable = ReferenceCountedDisposable.Create(target);
+            Assert.Equal(baseDisposable.Target, derivedDisposable.Target);
+        }
+
+        [Fact]
+        public void CreateBase_AfterDerived_RefersToSameTarget()
+        {
+            var target = new DerivedDisposable();
+            var baseTarget = target as BaseDisposable;
+            var derivedDisposable = ReferenceCountedDisposable.Create(target);
+            var baseDisposable = ReferenceCountedDisposable.Create(baseTarget);
+            Assert.Equal(baseDisposable.Target, derivedDisposable.Target);
+        }
+
+        [Fact]
+        public void GenericVariance_RefersToSameTarget()
+        {
+            var target = new DerivedDisposable();
+            var derivedDisposable = ReferenceCountedDisposable.Create(target);
+            var baseDisposable = derivedDisposable as IReferenceCountedDisposable<BaseDisposable>;
+            Assert.NotNull(baseDisposable);
+            Assert.Equal(baseDisposable.Target, derivedDisposable.Target);
+        }
+
+        [Fact]
+        public void CastReferenceFromBaseToDerived_Fails()
+        {
+            var target = new DerivedDisposable();
+            var baseTarget = target as BaseDisposable;
+            var baseDisposable = ReferenceCountedDisposable.Create(baseTarget);
+            var derivedDisposable = baseDisposable as IReferenceCountedDisposable<DerivedDisposable>;
+            Assert.Null(derivedDisposable);
+        }
+
+        [Fact]
+        public void CastTargetFromBaseToDerived_Succeeds()
+        {
+            var target = new DerivedDisposable();
+            var baseTarget = target as BaseDisposable;
+            var baseDisposable = ReferenceCountedDisposable.Create(baseTarget);
+            var derivedTarget = baseDisposable.Target as DerivedDisposable;
+            Assert.NotNull(derivedTarget);
+            Assert.Equal(derivedTarget, target);
+        }
+
         private sealed class UnsafeDisposable : IDisposable
         {
             public UnsafeDisposable(Action action) => _action = action;
@@ -212,6 +263,15 @@ namespace UnitTests
             public void Dispose() => _action();
 
             private readonly Action _action;
+        }
+
+        private class BaseDisposable : IDisposable
+        {
+            public void Dispose() { }
+        }
+
+        private class DerivedDisposable : BaseDisposable
+        {
         }
     }
 }
