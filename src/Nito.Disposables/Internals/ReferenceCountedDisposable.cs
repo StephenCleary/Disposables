@@ -19,13 +19,13 @@ namespace Nito.Disposables.Internals
             _ = referenceCounter ?? throw new ArgumentNullException(nameof(referenceCounter));
 
             // Ensure we can cast from the stored IDisposable to T.
-            _ = (T) referenceCounter.TryGetTarget()!;
+            _ = ((IReferenceCountedDisposable<T>) this).Target;
         }
 
         /// <inheritdoc/>
         protected override void Dispose(IReferenceCounter<IDisposable> referenceCounter) => referenceCounter.TryDecrementCount()?.Dispose();
 
-        T IReferenceCountedDisposable<T>.Target => (T) (ReferenceCounter.TryGetTarget() ?? throw new ObjectDisposedException(nameof(ReferenceCountedDisposable<T>)));
+        T IReferenceCountedDisposable<T>.Target => (T) ReferenceCounter.TryGetTarget()!;
 
         IReferenceCountedDisposable<T> IReferenceCountedDisposable<T>.AddReference()
         {
