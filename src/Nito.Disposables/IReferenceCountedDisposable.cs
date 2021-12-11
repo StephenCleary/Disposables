@@ -21,6 +21,6 @@ namespace Nito.Disposables
         /// <summary>
         /// Gets the target object. Throws <see cref="ObjectDisposedException"/> if this instance is disposed.
         /// </summary>
-        T Target { get; }
+        T? Target { get; }
     }
 }
