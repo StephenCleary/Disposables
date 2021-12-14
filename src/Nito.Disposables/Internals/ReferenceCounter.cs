@@ -6,24 +6,23 @@ namespace Nito.Disposables.Internals
     /// <summary>
     /// A reference count for an underlying target.
     /// </summary>
-    public sealed class ReferenceCounter<T> : IReferenceCounter<T>
-        where T : class
+    public sealed class ReferenceCounter : IReferenceCounter
     {
-        private T? _target;
+        private object? _target;
         private int _count;
 
         /// <summary>
         /// Creates a new reference counter with a reference count of 1 referencing the specified target.
         /// </summary>
-        public ReferenceCounter(T? target)
+        public ReferenceCounter(object? target)
         {
             _target = target;
             _count = 1;
         }
 
-        bool IReferenceCounter<T>.TryIncrementCount() => TryUpdate(x => x + 1) != null;
+        bool IReferenceCounter.TryIncrementCount() => TryUpdate(x => x + 1) != null;
 
-        T? IReferenceCounter<T>.TryDecrementCount()
+        object? IReferenceCounter.TryDecrementCount()
         {
             var updateResult = TryUpdate(x => x - 1);
             if (updateResult != 0)
@@ -31,7 +30,7 @@ namespace Nito.Disposables.Internals
             return Interlocked.Exchange(ref _target, null);
         }
 
-        T? IReferenceCounter<T>.TryGetTarget()
+        object? IReferenceCounter.TryGetTarget()
         {
             var result = Interlocked.CompareExchange(ref _target, null, null);
             var count = Interlocked.CompareExchange(ref _count, 0, 0);

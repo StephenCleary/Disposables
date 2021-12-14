@@ -313,7 +313,7 @@ namespace UnitTests
 
         private sealed class UnsafeSyncAsyncDisposable: IDisposable, IAsyncDisposable
         {
-            private Action _action;
+            private readonly Action _action;
 
             public UnsafeSyncAsyncDisposable(Action action) => _action = action;
             public void Dispose() => _action();

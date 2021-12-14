@@ -10,12 +10,12 @@ namespace Nito.Disposables.Internals
     public sealed class WeakReferenceCountedDisposable<T> : IWeakReferenceCountedDisposable<T>
         where T : class, IDisposable
     {
-        private readonly WeakReference<IReferenceCounter<object>> _weakReference;
+        private readonly WeakReference<IReferenceCounter> _weakReference;
 
         /// <summary>
         /// Creates an instance that weakly references the specified reference counter. The specified reference counter should not be incremented.
         /// </summary>
-        public WeakReferenceCountedDisposable(IReferenceCounter<object> referenceCounter)
+        public WeakReferenceCountedDisposable(IReferenceCounter referenceCounter)
         {
             _ = referenceCounter ?? throw new ArgumentNullException(nameof(referenceCounter));
 

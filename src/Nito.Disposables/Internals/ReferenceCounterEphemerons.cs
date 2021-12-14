@@ -14,10 +14,10 @@ namespace Nito.Disposables.Internals
         /// Increments and returns the reference counter for the specified target, creating it if necessary.
         /// Returns <c>null</c> if the reference counter has already reached 0.
         /// </summary>
-        public static IReferenceCounter<object>? TryGetAndIncrementOrCreate(object target)
+        public static IReferenceCounter? TryGetAndIncrementOrCreate(object target)
         {
-            ReferenceCounter<object>? createdReferenceCounter = null;
-            var referenceCounter =  Ephemerons.GetValue(target, t => createdReferenceCounter = new ReferenceCounter<object>(t));
+            ReferenceCounter? createdReferenceCounter = null;
+            var referenceCounter =  Ephemerons.GetValue(target, t => createdReferenceCounter = new ReferenceCounter(t));
             if (referenceCounter != createdReferenceCounter)
             {
                 if (!referenceCounter.TryIncrementCount())
@@ -27,6 +27,6 @@ namespace Nito.Disposables.Internals
             return referenceCounter;
         }
 
-        private static readonly ConditionalWeakTable<object, IReferenceCounter<object>> Ephemerons = new();
+        private static readonly ConditionalWeakTable<object, IReferenceCounter> Ephemerons = new();
     }
 }

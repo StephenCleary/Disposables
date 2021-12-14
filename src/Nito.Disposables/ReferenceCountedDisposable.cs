@@ -41,6 +41,6 @@ namespace Nito.Disposables
         /// <param name="disposable">The disposable to dispose when all references have been disposed. If this is <c>null</c>, then the returned instance does nothing when it is disposed.</param>
         public static IReferenceCountedDisposable<T> CreateWithNewReferenceCounter<T>(T? disposable)
             where T : class, IDisposable
-            => new ReferenceCountedDisposable<T>(new ReferenceCounter<IDisposable>(disposable));
+            => new ReferenceCountedDisposable<T>(new ReferenceCounter(disposable));
     }
 }
