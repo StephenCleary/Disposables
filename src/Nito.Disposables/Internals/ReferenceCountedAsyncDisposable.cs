@@ -9,13 +9,13 @@ namespace Nito.Disposables.Internals
     /// <summary>
     /// An instance that represents a reference count.
     /// </summary>
-    public sealed class ReferenceCountedAsyncDisposable<T> : SingleAsyncDisposable<IReferenceCounter<IAsyncDisposable>>, IReferenceCountedAsyncDisposable<T>
+    public sealed class ReferenceCountedAsyncDisposable<T> : SingleAsyncDisposable<IReferenceCounter<object>>, IReferenceCountedAsyncDisposable<T>
         where T : class, IAsyncDisposable
     {
         /// <summary>
         /// Initializes a reference counted disposable that refers to the specified reference count. The specified reference count must have already been incremented for this instance.
         /// </summary>
-        public ReferenceCountedAsyncDisposable(IReferenceCounter<IAsyncDisposable> referenceCounter)
+        public ReferenceCountedAsyncDisposable(IReferenceCounter<object> referenceCounter)
             : base(referenceCounter)
         {
             _ = referenceCounter ?? throw new ArgumentNullException(nameof(referenceCounter));
@@ -25,7 +25,7 @@ namespace Nito.Disposables.Internals
         }
 
         /// <inheritdoc/>
-        protected override ValueTask DisposeAsync(IReferenceCounter<IAsyncDisposable> referenceCounter) => referenceCounter.TryDecrementCount()?.DisposeAsync() ?? new ValueTask();
+        protected override ValueTask DisposeAsync(IReferenceCounter<object> referenceCounter) => (referenceCounter.TryDecrementCount() as IAsyncDisposable)?.DisposeAsync() ?? new ValueTask();
 
         T? IReferenceCountedAsyncDisposable<T>.Target => (T?) ReferenceCounter.TryGetTarget();
 
@@ -39,11 +39,11 @@ namespace Nito.Disposables.Internals
 
         IWeakReferenceCountedAsyncDisposable<T> IReferenceCountedAsyncDisposable<T>.AddWeakReference() => new WeakReferenceCountedAsyncDisposable<T>(ReferenceCounter);
 
-        private IReferenceCounter<IAsyncDisposable> ReferenceCounter
+        private IReferenceCounter<object> ReferenceCounter
         {
             get
             {
-                IReferenceCounter<IAsyncDisposable> referenceCounter = null!;
+                IReferenceCounter<object> referenceCounter = null!;
                 // Implementation note: this always "succeeds" in updating the context since it always returns the same instance.
                 // So, we know that this will be called at most once. It may also be called zero times if this instance is disposed.
                 if (!TryUpdateContext(x => referenceCounter = x))

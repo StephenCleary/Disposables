@@ -28,13 +28,9 @@ namespace Nito.Disposables
             if (disposable == null)
                 return CreateWithNewReferenceCounter(disposable);
 
-            ReferenceCounter<IDisposable>? createdReferenceCounter = null;
-            var referenceCounter = Ephemerons.GetValue(disposable, _ => createdReferenceCounter = new ReferenceCounter<IDisposable>(disposable));
-            if (createdReferenceCounter != referenceCounter)
-            {
-                if (!referenceCounter.TryIncrementCount())
-                    return null;
-            }
+            var referenceCounter = ReferenceCounterEphemerons.TryGetAndIncrementOrCreate(disposable);
+            if (referenceCounter == null)
+                return null;
 
             return new ReferenceCountedDisposable<T>(referenceCounter);
         }
@@ -46,7 +42,5 @@ namespace Nito.Disposables
         public static IReferenceCountedDisposable<T> CreateWithNewReferenceCounter<T>(T? disposable)
             where T : class, IDisposable
             => new ReferenceCountedDisposable<T>(new ReferenceCounter<IDisposable>(disposable));
-
-        private static readonly ConditionalWeakTable<IDisposable, IReferenceCounter<IDisposable>> Ephemerons = new();
     }
 }

@@ -258,6 +258,41 @@ namespace UnitTests
             Assert.Equal(derivedTarget, target);
         }
 
+        [Fact]
+        public void Create_FromBothSynchronousAndAysnchronous_ReferencesSameTarget()
+        {
+            var target = new UnsafeSyncAsyncDisposable(() => { });
+            var syncDisposable = ReferenceCountedDisposable.Create(target);
+            var asyncDisposable = ReferenceCountedAsyncDisposable.Create(target);
+            Assert.Equal(syncDisposable.Target, asyncDisposable.Target);
+        }
+
+        [Fact]
+        public async Task BothSyncAndAysnc_SyncDisposedFirst_OnlyDisposesWhenBothAreDisposed()
+        {
+            var disposeCount = 0;
+            var target = new UnsafeSyncAsyncDisposable(() => ++disposeCount);
+            var syncDisposable = ReferenceCountedDisposable.Create(target);
+            var asyncDisposable = ReferenceCountedAsyncDisposable.Create(target);
+            syncDisposable.Dispose();
+            Assert.Equal(0, disposeCount);
+            await asyncDisposable.DisposeAsync();
+            Assert.Equal(1, disposeCount);
+        }
+
+        [Fact]
+        public async Task BothSyncAndAysnc_AsyncDisposedFirst_OnlyDisposesWhenBothAreDisposed()
+        {
+            var disposeCount = 0;
+            var target = new UnsafeSyncAsyncDisposable(() => ++disposeCount);
+            var syncDisposable = ReferenceCountedDisposable.Create(target);
+            var asyncDisposable = ReferenceCountedAsyncDisposable.Create(target);
+            await asyncDisposable.DisposeAsync();
+            Assert.Equal(0, disposeCount);
+            syncDisposable.Dispose();
+            Assert.Equal(1, disposeCount);
+        }
+
         private sealed class UnsafeDisposable : IAsyncDisposable
         {
             public UnsafeDisposable(Func<Task> action) => _action = action;
@@ -274,6 +309,19 @@ namespace UnitTests
 
         private class DerivedDisposable : BaseDisposable
         {
+        }
+
+        private sealed class UnsafeSyncAsyncDisposable: IDisposable, IAsyncDisposable
+        {
+            private Action _action;
+
+            public UnsafeSyncAsyncDisposable(Action action) => _action = action;
+            public void Dispose() => _action();
+            public ValueTask DisposeAsync()
+            {
+                _action();
+                return new();
+            }
         }
     }
 }
