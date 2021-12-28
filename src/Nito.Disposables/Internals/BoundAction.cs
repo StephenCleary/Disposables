@@ -45,7 +45,7 @@ namespace Nito.Disposables.Internals
             _ = contextUpdater ?? throw new ArgumentNullException(nameof(contextUpdater));
             while (true)
             {
-                var original = Interlocked.CompareExchange(ref _field, _field, _field);
+                var original = Interlocked.CompareExchange(ref _field, null, null);
                 if (original == null)
                     return false;
                 var updatedContext = new BoundAction(original, contextUpdater);
