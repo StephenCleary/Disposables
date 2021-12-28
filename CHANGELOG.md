@@ -3,14 +3,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-- [Feature] Added `ReferenceCountedDisposable`, `ReferenceCountedAsyncDisposable`, and associated types.
+- [Feature] Added `ReferenceCountedDisposable`, `ReferenceCountedAsyncDisposable`, and associated types. #12
 - [Fix] Fixed race condition bug (never observed). #14
 
 ## [2.2.1] - 2021-09-25
 - [Fix] Bumped `System.Collections.Immutable` dependency version from `1.4.0` to `1.7.1`. This fixes the shim dlls issue on .NET Framework targets.
 
 ## [2.2.0] - 2020-10-02
-- [Feature] Added support for `null` disposables and delegates (which are ignored).
+- [Feature] Added support for `null` disposables and delegates (which are ignored). #13
 - [Feature] Added `Disposable` and `AsyncDisposable`.
 
 ## [2.1.0] - 2020-06-08
@@ -24,10 +24,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [2.0.1] - 2019-07-20
 - [Fix] Published NuGet symbol packages.
-- [Fix] Added explicit `net461` target.
+- [Fix] Added explicit `net461` target. #4
 
 ## [2.0.0] - 2018-06-02
-- [Breaking] Fixed typo: `SingleDisposable<T>.IsDispoed` is now `SingleDisposable<T>.IsDisposed`.
+- [Breaking] Fixed typo: `SingleDisposable<T>.IsDispoed` is now `SingleDisposable<T>.IsDisposed`. #3
 - [Feature] Added source linking.
 
 ## [1.2.3] - 2017-09-09
