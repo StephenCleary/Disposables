@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 - [Feature] Added `ReferenceCountedDisposable`, `ReferenceCountedAsyncDisposable`, and associated types.
-- [Fix] Fixed race condition bug (never observed).
+- [Fix] Fixed race condition bug (never observed). #14
 
 ## [2.2.1] - 2021-09-25
 - [Fix] Bumped `System.Collections.Immutable` dependency version from `1.4.0` to `1.7.1`. This fixes the shim dlls issue on .NET Framework targets.
