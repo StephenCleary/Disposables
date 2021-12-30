@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Nito.Disposables;
-using System.Linq;
-using System.Threading;
 using Xunit;
+using Nito.Disposables.Advanced;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
@@ -16,7 +14,7 @@ namespace UnitTests
         {
             var providedContext = new object();
             object seenContext = null;
-            var disposable = new DelegateSingleDisposable<object>(providedContext, async context => { seenContext = context; });
+            var disposable = new SingleNonblockingAsyncDisposable<object>(providedContext, async context => { seenContext = context; });
             await disposable.DisposeAsync();
             Assert.Same(providedContext, seenContext);
         }
@@ -28,7 +26,7 @@ namespace UnitTests
             var updatedContext = new object();
             object contextPassedToDispose = null;
             object contextPassedToTryUpdateContextDelegate = null;
-            var disposable = new DelegateSingleDisposable<object>(originalContext, async context => { contextPassedToDispose = context; });
+            var disposable = new SingleNonblockingAsyncDisposable<object>(originalContext, async context => { contextPassedToDispose = context; });
             Assert.True(disposable.TryUpdateContext(context => { contextPassedToTryUpdateContextDelegate = context; return updatedContext; }));
             await disposable.DisposeAsync();
             Assert.Same(originalContext, contextPassedToTryUpdateContextDelegate);
@@ -42,7 +40,7 @@ namespace UnitTests
             var updatedContext = new object();
             object contextPassedToDispose = null;
             bool tryUpdateContextDelegateCalled = false;
-            var disposable = new DelegateSingleDisposable<object>(originalContext, async context => { contextPassedToDispose = context; });
+            var disposable = new SingleNonblockingAsyncDisposable<object>(originalContext, async context => { contextPassedToDispose = context; });
             await disposable.DisposeAsync();
             Assert.False(disposable.TryUpdateContext(context => { tryUpdateContextDelegateCalled = true; return updatedContext; }));
             Assert.False(tryUpdateContextDelegateCalled);
@@ -53,7 +51,7 @@ namespace UnitTests
         public async Task DisposeOnlyCalledOnce()
         {
             var counter = 0;
-            var disposable = new DelegateSingleDisposable<object>(new object(), async _ => { ++counter; });
+            var disposable = new SingleNonblockingAsyncDisposable<object>(new object(), async _ => { ++counter; });
             await disposable.DisposeAsync();
             await disposable.DisposeAsync();
             Assert.Equal(1, counter);
@@ -64,7 +62,7 @@ namespace UnitTests
         {
             var ready = new TaskCompletionSource<object>();
             var signal = new TaskCompletionSource<object>();
-            var disposable = new DelegateSingleDisposable<object>(new object(), async _ =>
+            var disposable = new SingleNonblockingAsyncDisposable<object>(new object(), async _ =>
             {
                 ready.TrySetResult(null);
                 await signal.Task;
@@ -84,7 +82,7 @@ namespace UnitTests
         {
             var ready = new TaskCompletionSource<object>();
             var signal = new TaskCompletionSource<object>();
-            var disposable = new DelegateSingleDisposable<object>(new object(), async _ =>
+            var disposable = new SingleNonblockingAsyncDisposable<object>(new object(), async _ =>
             {
                 ready.TrySetResult(null);
                 await signal.Task;
@@ -102,28 +100,6 @@ namespace UnitTests
             await task1;
 
             Assert.True(disposable.IsDisposed);
-        }
-
-        private sealed class DelegateSingleDisposable<T> : SingleNonblockingAsyncDisposable<T>
-            where T : class
-        {
-            private readonly Func<T, Task> _callback;
-
-            public DelegateSingleDisposable(T context, Func<T, Task> callback)
-                : base(context)
-            {
-                _callback = callback;
-            }
-
-            public new bool TryUpdateContext(Func<T, T> updater)
-            {
-                return base.TryUpdateContext(updater);
-            }
-
-            protected override async ValueTask DisposeAsync(T context)
-            {
-                await _callback(context);
-            }
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using Nito.Disposables.Advanced;
 using Nito.Disposables.Internals;
 
 namespace Nito.Disposables
@@ -11,8 +12,9 @@ namespace Nito.Disposables
     /// <summary>
     /// Disposes a collection of disposables.
     /// </summary>
-    public sealed class CollectionAsyncDisposable : SingleAsyncDisposable<ImmutableQueue<IAsyncDisposable>>
+    public sealed class CollectionAsyncDisposable : IAsyncDisposable, IDisposableProperties
     {
+        private readonly SingleAsyncDisposable<ImmutableQueue<IAsyncDisposable>> _singleDisposable;
         private readonly AsyncDisposeFlags _flags;
 
         /// <summary>
@@ -39,25 +41,36 @@ namespace Nito.Disposables
         /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, but entries may be <c>null</c>.</param>
         /// <param name="flags">Flags that control how asynchronous disposal is handled.</param>
         public CollectionAsyncDisposable(IEnumerable<IAsyncDisposable?> disposables, AsyncDisposeFlags flags)
-            : base(ImmutableQueue.CreateRange(disposables.WhereNotNull()))
         {
+            _singleDisposable = new(ImmutableQueue.CreateRange(disposables.WhereNotNull()), DisposeAsync);
             _flags = flags;
+
+            async ValueTask DisposeAsync(ImmutableQueue<IAsyncDisposable> context)
+            {
+                if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
+                {
+                    foreach (var disposable in context)
+                        await disposable.DisposeAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    var tasks = context.Select(disposable => disposable.DisposeAsync().AsTask()).ToList();
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                }
+            }
         }
 
-        /// <inheritdoc />
-        protected override async ValueTask DisposeAsync(ImmutableQueue<IAsyncDisposable> context)
-        {
-            if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
-            {
-                foreach (var disposable in context)
-                    await disposable.DisposeAsync().ConfigureAwait(false);
-            }
-            else
-            {
-                var tasks = context.Select(disposable => disposable.DisposeAsync().AsTask()).ToList();
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-            }
-        }
+        /// <inheritdoc/>
+        public bool IsDisposeStarted => _singleDisposable.IsDisposeStarted;
+
+        /// <inheritdoc/>
+        public bool IsDisposed => _singleDisposable.IsDisposed;
+
+        /// <inheritdoc/>
+        public bool IsDisposing => _singleDisposable.IsDisposing;
+
+        /// <inheritdoc/>
+        public ValueTask DisposeAsync() => _singleDisposable.DisposeAsync();
 
         /// <summary>
         /// Adds a disposable to the collection of disposables. If this instance is already disposed or disposing, then <paramref name="disposable"/> is disposed immediately.
@@ -68,12 +81,12 @@ namespace Nito.Disposables
         {
             if (disposable == null)
                 return;
-            if (TryUpdateContext(x => x.Enqueue(disposable)))
+            if (_singleDisposable.TryUpdateContext(x => x.Enqueue(disposable)))
                 return;
 
             // If we are executing serially, wait for our disposal to complete; then dispose the additional item.
             if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
-                await DisposeAsync().ConfigureAwait(false);
+                await _singleDisposable.DisposeAsync().ConfigureAwait(false);
             await disposable.DisposeAsync().ConfigureAwait(false);
         }
 

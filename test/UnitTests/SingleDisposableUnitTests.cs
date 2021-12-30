@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Nito.Disposables;
-using System.Linq;
 using System.Threading;
 using Xunit;
+using Nito.Disposables.Advanced;
 
 namespace UnitTests
 {
@@ -14,7 +13,7 @@ namespace UnitTests
         {
             var providedContext = new object();
             object seenContext = null;
-            var disposable = new DelegateSingleDisposable<object>(providedContext, context => { seenContext = context; });
+            var disposable = new SingleDisposable<object>(providedContext, context => { seenContext = context; });
             disposable.Dispose();
             Assert.Same(providedContext, seenContext);
         }
@@ -26,7 +25,7 @@ namespace UnitTests
             var updatedContext = new object();
             object contextPassedToDispose = null;
             object contextPassedToTryUpdateContextDelegate = null;
-            var disposable = new DelegateSingleDisposable<object>(originalContext, context => { contextPassedToDispose = context; });
+            var disposable = new SingleDisposable<object>(originalContext, context => { contextPassedToDispose = context; });
             Assert.True(disposable.TryUpdateContext(context => { contextPassedToTryUpdateContextDelegate = context; return updatedContext; }));
             disposable.Dispose();
             Assert.Same(originalContext, contextPassedToTryUpdateContextDelegate);
@@ -42,7 +41,7 @@ namespace UnitTests
             bool tryUpdateContextDelegateCalled = false;
             var ready = new ManualResetEventSlim();
             var signal = new ManualResetEventSlim();
-            var disposable = new DelegateSingleDisposable<object>(originalContext, context =>
+            var disposable = new SingleDisposable<object>(originalContext, context =>
             {
                 ready.Set();
                 signal.Wait();
@@ -64,7 +63,7 @@ namespace UnitTests
             var updatedContext = new object();
             object contextPassedToDispose = null;
             bool tryUpdateContextDelegateCalled = false;
-            var disposable = new DelegateSingleDisposable<object>(originalContext, context => { contextPassedToDispose = context; });
+            var disposable = new SingleDisposable<object>(originalContext, context => { contextPassedToDispose = context; });
             disposable.Dispose();
             Assert.False(disposable.TryUpdateContext(context => { tryUpdateContextDelegateCalled = true; return updatedContext; }));
             Assert.False(tryUpdateContextDelegateCalled);
@@ -75,7 +74,7 @@ namespace UnitTests
         public void DisposeOnlyCalledOnce()
         {
             var counter = 0;
-            var disposable = new DelegateSingleDisposable<object>(new object(), _ => { ++counter; });
+            var disposable = new SingleDisposable<object>(new object(), _ => { ++counter; });
             disposable.Dispose();
             disposable.Dispose();
             Assert.Equal(1, counter);
@@ -86,7 +85,7 @@ namespace UnitTests
         {
             var ready = new ManualResetEventSlim();
             var signal = new ManualResetEventSlim();
-            var disposable = new DelegateSingleDisposable<object>(new object(), _ =>
+            var disposable = new SingleDisposable<object>(new object(), _ =>
             {
                 ready.Set();
                 signal.Wait();
@@ -110,7 +109,7 @@ namespace UnitTests
             var ready = new ManualResetEventSlim();
             var signal = new ManualResetEventSlim();
 
-            var disposable = new DelegateSingleDisposable<object>(new object(), _ =>
+            var disposable = new SingleDisposable<object>(new object(), _ =>
             {
                 ready.Set();
                 signal.Wait();
@@ -133,28 +132,6 @@ namespace UnitTests
             Assert.False(disposable.IsDisposing);
             Assert.True(disposable.IsDisposeStarted);
             Assert.True(disposable.IsDisposed);
-        }
-
-        private sealed class DelegateSingleDisposable<T> : SingleDisposable<T>
-            where T : class
-        {
-            private readonly Action<T> _callback;
-
-            public DelegateSingleDisposable(T context, Action<T> callback)
-                : base(context)
-            {
-                _callback = callback;
-            }
-
-            public new bool TryUpdateContext(Func<T, T> updater)
-            {
-                return base.TryUpdateContext(updater);
-            }
-
-            protected override void Dispose(T context)
-            {
-                _callback(context);
-            }
         }
     }
 }

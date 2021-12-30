@@ -3,16 +3,16 @@ using System;
 using System.Threading.Tasks;
 using Nito.Disposables.Internals;
 
-namespace Nito.Disposables
+namespace Nito.Disposables.Advanced
 {
     /// <summary>
-    /// A base class for disposables that need exactly-once semantics in a thread-safe way. All disposals of this instance block until the disposal is complete.
+    /// A helper class for disposables that need exactly-once semantics in a thread-safe way. All disposals of this instance block until the disposal is complete.
     /// </summary>
     /// <typeparam name="T">The type of "context" for the derived disposable. Since the context should not be modified, strongly consider making this an immutable type.</typeparam>
     /// <remarks>
     /// <para>If <see cref="DisposeAsync()"/> is called multiple times, only the first call will execute the disposal code. Other calls to <see cref="DisposeAsync()"/> will wait for the disposal to complete.</para>
     /// </remarks>
-    public abstract class SingleAsyncDisposable<T> : IAsyncDisposable
+    public sealed class SingleAsyncDisposable<T> : IAsyncDisposable
     {
         /// <summary>
         /// The context. This is never <c>null</c>. This is empty if this instance has already been disposed (or is being disposed).
@@ -24,10 +24,11 @@ namespace Nito.Disposables
         /// <summary>
         /// Creates a disposable for the specified context.
         /// </summary>
-        /// <param name="context">The context passed to <see cref="DisposeAsync(T)"/>.</param>
-        protected SingleAsyncDisposable(T context)
+        /// <param name="context">The context passed to <paramref name="disposeAsync"/>.</param>
+        /// <param name="disposeAsync">The actual disposal method, called only once from <see cref="DisposeAsync()"/>.</param>
+        public SingleAsyncDisposable(T context, Func<T, ValueTask> disposeAsync)
         {
-            _context = new BoundAsyncActionField<T>(DisposeAsync, context);
+            _context = new BoundAsyncActionField<T>(disposeAsync, context);
         }
 
         /// <summary>
@@ -44,12 +45,6 @@ namespace Nito.Disposables
         /// Whether this instance is currently disposing, but not finished yet.
         /// </summary>
         public bool IsDisposing => IsDisposeStarted && !IsDisposed;
-
-        /// <summary>
-        /// The actual disposal method, called only once from <see cref="DisposeAsync()"/>.
-        /// </summary>
-        /// <param name="context">The context for the disposal operation.</param>
-        protected abstract ValueTask DisposeAsync(T context);
 
         /// <summary>
         /// Disposes this instance.
@@ -79,7 +74,7 @@ namespace Nito.Disposables
         /// Attempts to update the stored context. This method returns <c>false</c> if this instance has already been disposed (or is being disposed).
         /// </summary>
         /// <param name="contextUpdater">The function used to update an existing context. This may be called more than once if more than one thread attempts to simultaneously update the context.</param>
-        protected bool TryUpdateContext(Func<T, T> contextUpdater) => _context.TryUpdateContext(contextUpdater);
+        public bool TryUpdateContext(Func<T, T> contextUpdater) => _context.TryUpdateContext(contextUpdater);
     }
 }
 #endif

@@ -1,16 +1,18 @@
-﻿using System;
+﻿using Nito.Disposables.Advanced;
+using Nito.Disposables.Internals;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using Nito.Disposables.Internals;
 
 namespace Nito.Disposables
 {
     /// <summary>
     /// Disposes a collection of disposables.
     /// </summary>
-    public sealed class CollectionDisposable : SingleDisposable<ImmutableQueue<IDisposable>>
+    public sealed class CollectionDisposable : IDisposable, IDisposableProperties
     {
+        private readonly SingleDisposable<ImmutableQueue<IDisposable>> _singleDisposable;
+
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
@@ -25,16 +27,27 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, but entries may be <c>null</c>.</param>
         public CollectionDisposable(IEnumerable<IDisposable?> disposables)
-            : base(ImmutableQueue.CreateRange(disposables.WhereNotNull()))
         {
+            _singleDisposable = new(ImmutableQueue.CreateRange(disposables.WhereNotNull()), Dispose);
+
+            static void Dispose(ImmutableQueue<IDisposable> context)
+            {
+                foreach (var disposable in context)
+                    disposable?.Dispose();
+            }
         }
 
-        /// <inheritdoc />
-        protected override void Dispose(ImmutableQueue<IDisposable> context)
-        {
-            foreach (var disposable in context)
-                disposable?.Dispose();
-        }
+        /// <inheritdoc/>
+        public bool IsDisposeStarted => _singleDisposable.IsDisposeStarted;
+
+        /// <inheritdoc/>
+        public bool IsDisposed => _singleDisposable.IsDisposed;
+
+        /// <inheritdoc/>
+        public bool IsDisposing => _singleDisposable.IsDisposing;
+
+        /// <inheritdoc/>
+        public void Dispose() => _singleDisposable.Dispose();
 
         /// <summary>
         /// Adds a disposable to the collection of disposables. If this instance is already disposed or disposing, then <paramref name="disposable"/> is disposed immediately.
@@ -45,11 +58,11 @@ namespace Nito.Disposables
         {
             if (disposable == null)
                 return;
-            if (TryUpdateContext(x => x.Enqueue(disposable)))
+            if (_singleDisposable.TryUpdateContext(x => x.Enqueue(disposable)))
                 return;
 
             // Wait for our disposal to complete; then dispose the additional item.
-            Dispose();
+            _singleDisposable.Dispose();
             disposable.Dispose();
         }
 
@@ -57,12 +70,12 @@ namespace Nito.Disposables
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
         /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, but entries may be <c>null</c>.</param>
-        public static CollectionDisposable Create(params IDisposable?[] disposables) => new CollectionDisposable(disposables);
+        public static CollectionDisposable Create(params IDisposable?[] disposables) => new(disposables);
 
         /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
         /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, but entries may be <c>null</c>.</param>
-        public static CollectionDisposable Create(IEnumerable<IDisposable?> disposables) => new CollectionDisposable(disposables);
+        public static CollectionDisposable Create(IEnumerable<IDisposable?> disposables) => new(disposables);
     }
 }

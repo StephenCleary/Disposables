@@ -1,4 +1,5 @@
 ﻿#if NETSTANDARD2_1
+using Nito.Disposables.Advanced;
 using System;
 
 namespace Nito.Disposables
@@ -6,7 +7,7 @@ namespace Nito.Disposables
     /// <summary>
     /// An instance that represents a reference count. All members are threadsafe.
     /// </summary>
-    public interface IReferenceCountedAsyncDisposable<out T> : IAsyncDisposable
+    public interface IReferenceCountedAsyncDisposable<out T> : IAsyncDisposable, IDisposableProperties
         where T : class, IAsyncDisposable
     {
         /// <summary>
@@ -23,21 +24,6 @@ namespace Nito.Disposables
         /// Gets the target object. Throws <see cref="ObjectDisposedException"/> if this instance is disposed.
         /// </summary>
         T? Target { get; }
-
-        /// <summary>
-        /// Whether this instance is currently disposing or has been disposed.
-        /// </summary>
-        public bool IsDisposeStarted { get; }
-
-        /// <summary>
-        /// Whether this instance is disposed (finished disposing).
-        /// </summary>
-        public bool IsDisposed { get; }
-
-        /// <summary>
-        /// Whether this instance is currently disposing, but not finished yet.
-        /// </summary>
-        public bool IsDisposing { get; }
     }
 }
 #endif
