@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" Version="1.7.1" />
+    <PackageReference Condition="'$(TargetFramework)' == 'netstandard1.0'" Include="System.Dynamic.Runtime" Version="4.3.0" />
   </ItemGroup>
 
 </Project>
