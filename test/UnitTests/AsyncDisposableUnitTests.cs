@@ -106,10 +106,10 @@ namespace UnitTests
             {
                 await disposable.AddAsync(async () =>
                 {
-                    Assert.False(running);
-                    running = true;
+                    Assert.False(Volatile.Read(ref running));
+                    Volatile.Write(ref running, true);
                     await Task.Delay(10);
-                    running = false;
+                    Volatile.Write(ref running, false);
                 });
             }
 

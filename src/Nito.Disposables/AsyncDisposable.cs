@@ -44,9 +44,9 @@ namespace Nito.Disposables
                     return context();
 
                 if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
-                    return DoDisposeConcurrentlyAsync(handlers);
-                else
                     return DoDisposeSeriallyAsync(handlers);
+                else
+                    return DoDisposeConcurrentlyAsync(handlers);
             }
 
             static async ValueTask DoDisposeConcurrentlyAsync(IReadOnlyList<Delegate> handlers)
