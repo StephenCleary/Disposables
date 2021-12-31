@@ -1,6 +1,11 @@
 # Changelog
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- [Breaking] Moved `SingleDisposable`, `SingleAsyncDisposable`, `SingleNonblockingDisposable`, and `SingleNonblockingAsyncDisposable` to the `Nito.Disposables.Advanced` namespace and changed the APIs to be compose-based instead of inheritance-based.
+- [Breaking] Removed `AnonymousDisposable` and `AnonymousAsyncDisposable`. Use `Disposable` and `AsyncDisposable` instead.
+
 ## [2.3.0] - 2021-12-30
 
 - [Feature] Added `ReferenceCountedDisposable`, `ReferenceCountedAsyncDisposable`, and associated types. [#12](https://github.com/StephenCleary/Disposables/issues/12)
