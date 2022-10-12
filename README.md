@@ -1,3 +1,13 @@
+# Disposables ===> STRONG NAMED
+
+This is the strong named version of [Nito.Disposables](https://github.com/StephenCleary/Disposables)
+
+Version numbers do map with the original repo.
+
+***Original documentation below this line***
+	
+---
+
 ![Logo](src/icon.png)
 
 # Disposables [![Build status](https://github.com/StephenCleary/Disposables/workflows/Build/badge.svg)](https://github.com/StephenCleary/Disposables/actions?query=workflow%3ABuild) [![codecov](https://codecov.io/gh/StephenCleary/Disposables/branch/master/graph/badge.svg)](https://codecov.io/gh/StephenCleary/Disposables) [![NuGet version](https://badge.fury.io/nu/Nito.Disposables.svg)](https://www.nuget.org/packages/Nito.Disposables) [![API docs](https://img.shields.io/badge/API-dotnetapis-blue.svg)](http://dotnetapis.com/pkg/Nito.Disposables)
