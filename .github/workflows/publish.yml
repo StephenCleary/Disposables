@@ -34,5 +34,5 @@ jobs:
     - name: Pack
       run: dotnet pack --configuration Release -p:Version=${GITHUB_REF#*v}
     - name: Push
-      run: dotnet nuget push --skip-duplicate --source https://nuget.pkg.github.com/fugro/index.json --api-key "${{secrets.GITHUB_TOKEN}}" 'Nito.Disposables/bin/Release/*.nupkg'
+      run: dotnet nuget push --skip-duplicate --source https://nuget.pkg.github.com/fugro/index.json --api-key "${{secrets.GITHUB_TOKEN}}" 'src/Nito.Disposables/bin/Release/*.nupkg'
       
