@@ -4,6 +4,9 @@
     <Description>IDisposable and IAsyncDisposable helper types.</Description>
     <TargetFrameworks>netstandard1.0;netstandard2.0;netstandard2.1;net461</TargetFrameworks>
     <PackageTags>idisposable,iasyncdisposable,disposable</PackageTags>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>../../nito_strong_name.snk</AssemblyOriginatorKeyFile>
+    <PackageId>Nito.Disposables.StrongNamed</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

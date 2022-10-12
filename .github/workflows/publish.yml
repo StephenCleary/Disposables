@@ -1,0 +1,38 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+*
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: ./src
+
+jobs:
+  publish:
+    name: Pack & Publish
+    runs-on: ubuntu-latest
+    env:
+      BUILD_ENV: GitHub
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+        source-url: https://nuget.pkg.github.com/fugro/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.GLOBAL_READ_PACKAGES_SECRET}}
+    - name: Bootstrap (load Fugro.Project.Configuration)
+      run: dotnet tool restore
+    - name: Build
+      run: dotnet build --configuration Release -p:Version=${GITHUB_REF#*v}
+    - name: Pack
+      run: dotnet pack --configuration Release -p:Version=${GITHUB_REF#*v}
+    - name: Push
+      run: dotnet nuget push --skip-duplicate --source https://nuget.pkg.github.com/fugro/index.json --api-key "${{secrets.GITHUB_TOKEN}}" 'Nito.Disposables/bin/Release/*.nupkg'
+      

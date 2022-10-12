@@ -2,6 +2,6 @@
   <PropertyGroup>
     <VersionPrefix>2.3.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
-    <Authors>Stephen Cleary</Authors>
+    <Authors>Stephen Cleary, strong named by Fugro Discovery Team [FIT]</Authors>
   </PropertyGroup>
 </Project>
