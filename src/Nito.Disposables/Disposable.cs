@@ -1,5 +1,6 @@
 ﻿using Nito.Disposables.Advanced;
 using System;
+using System.Threading.Tasks;
 
 namespace Nito.Disposables
 {
@@ -46,6 +47,22 @@ namespace Nito.Disposables
             // Wait for our disposal to complete; then call the additional delegate.
             _singleDisposable.Dispose();
             dispose();
+        }
+
+        /// <summary>
+        /// Makes this disposable do nothing when it is disposed. Returns the actions this disposable *would* have taken; these can be passed to a new instance to transfer ownership.
+        /// </summary>
+        public Action? Abandon()
+        {
+            Action? result = null;
+            var updated = _singleDisposable.TryUpdateContext(x =>
+            {
+                result = x;
+                return null;
+            });
+            if (!updated)
+                result = null;
+            return result;
         }
 
         /// <summary>

@@ -93,6 +93,22 @@ namespace Nito.Disposables
         }
 
         /// <summary>
+        /// Makes this disposable do nothing when it is disposed. Returns the actions this disposable *would* have taken; these can be passed to a new instance to transfer ownership.
+        /// </summary>
+        public Func<ValueTask>? Abandon()
+        {
+            Func<ValueTask>? result = null;
+            var updated = _singleDisposable.TryUpdateContext(x =>
+            {
+                result = x;
+                return null;
+            });
+            if (!updated)
+                result = null;
+            return result;
+        }
+
+        /// <summary>
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
