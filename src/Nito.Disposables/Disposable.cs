@@ -5,7 +5,7 @@ namespace Nito.Disposables
     /// <summary>
     /// A disposable that executes a delegate when disposed.
     /// </summary>
-    public sealed class Disposable : SingleDisposable<Action>
+    public sealed class Disposable : SingleDisposable<Action?>
     {
         /// <summary>
         /// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
@@ -34,6 +34,22 @@ namespace Nito.Disposables
             // Wait for our disposal to complete; then call the additional delegate.
             Dispose();
             dispose();
+        }
+
+        /// <summary>
+        /// Makes this disposable do nothing when it is disposed. Returns the actions this disposable *would* have taken; these can be passed to a new instance to transfer ownership.
+        /// </summary>
+        public Action? Abandon()
+        {
+            Action? result = null;
+            var updated = TryUpdateContext(x =>
+            {
+                result = x;
+                return null;
+            });
+            if (!updated)
+                result = null;
+            return result;
         }
 
         /// <summary>

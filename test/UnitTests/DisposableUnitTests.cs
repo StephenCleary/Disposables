@@ -81,5 +81,25 @@ namespace UnitTests
             disposable.Dispose();
             Assert.Equal(1, counter);
         }
+
+        [Fact]
+        public void Abandon_DoesNotInvokeAction()
+        {
+            bool actionInvoked = false;
+            var disposable = Disposable.Create(() => { actionInvoked = true; });
+            disposable.Abandon();
+            disposable.Dispose();
+            Assert.False(actionInvoked);
+        }
+
+        [Fact]
+        public void AbandonWithConstruction_TransfersOwnership()
+        {
+            bool actionInvoked = false;
+            var disposable = Disposable.Create(() => { actionInvoked = true; });
+            var disposable2 = Disposable.Create(disposable.Abandon());
+            disposable2.Dispose();
+            Assert.True(actionInvoked);
+        }
     }
 }

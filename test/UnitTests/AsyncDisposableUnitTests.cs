@@ -125,5 +125,25 @@ namespace UnitTests
             await disposable.DisposeAsync();
             Assert.Equal(1, counter);
         }
+
+        [Fact]
+        public async Task Abandon_DoesNotInvokeAction()
+        {
+            bool actionInvoked = false;
+            var disposable = AsyncDisposable.Create(async () => { actionInvoked = true; });
+            disposable.Abandon();
+            await disposable.DisposeAsync();
+            Assert.False(actionInvoked);
+        }
+
+        [Fact]
+        public async Task AbandonWithConstruction_TransfersOwnership()
+        {
+            bool actionInvoked = false;
+            var disposable = AsyncDisposable.Create(async () => { actionInvoked = true; });
+            var disposable2 = AsyncDisposable.Create(disposable.Abandon());
+            await disposable2.DisposeAsync();
+            Assert.True(actionInvoked);
+        }
     }
 }

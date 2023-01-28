@@ -54,6 +54,22 @@ namespace Nito.Disposables
         }
 
         /// <summary>
+        /// Makes this disposable do nothing when it is disposed. Returns the actions this disposable *would* have taken; these can be passed to a new instance to transfer ownership.
+        /// </summary>
+        public IEnumerable<IDisposable> Abandon()
+        {
+            var result = ImmutableQueue<IDisposable>.Empty;
+            var updated = TryUpdateContext(x =>
+            {
+                result = x;
+                return ImmutableQueue<IDisposable>.Empty;
+            });
+            if (!updated)
+                result = ImmutableQueue<IDisposable>.Empty;
+            return result;
+        }
+
+        /// <summary>
         /// Creates a disposable that disposes a collection of disposables.
         /// </summary>
         /// <param name="disposables">The disposables to dispose. May not be <c>null</c>, but entries may be <c>null</c>.</param>

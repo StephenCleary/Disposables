@@ -9,7 +9,7 @@ namespace Nito.Disposables
     /// <summary>
     /// A disposable that executes a delegate when disposed.
     /// </summary>
-    public sealed class AsyncDisposable : SingleAsyncDisposable<Func<ValueTask>>
+    public sealed class AsyncDisposable : SingleAsyncDisposable<Func<ValueTask>?>
     {
         private readonly AsyncDisposeFlags _flags;
 
@@ -76,6 +76,22 @@ namespace Nito.Disposables
             if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
                 await DisposeAsync().ConfigureAwait(false);
             await dispose().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Makes this disposable do nothing when it is disposed. Returns the actions this disposable *would* have taken; these can be passed to a new instance to transfer ownership.
+        /// </summary>
+        public Func<ValueTask>? Abandon()
+        {
+            Func<ValueTask>? result = null;
+            var updated = TryUpdateContext(x =>
+            {
+                result = x;
+                return null;
+            });
+            if (!updated)
+                result = null;
+            return result;
         }
 
         /// <summary>
