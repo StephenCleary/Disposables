@@ -46,6 +46,28 @@ By default, all `IAsyncDisposable` instances are disposed concurrently, but you 
 
 `CollectionDisposable` can be used as a wrapper to enforce only-dispose-once semantics on another disposable. If a type `IncorrectDisposable` has a `Dispose` method that breaks if it is called more than once, then `CollectionDisposable.Create(incorrectDisposable)` returns an `IDisposable` that will only invoke `IncorrectDisposable.Dispose` a single time, regardless of how many times you call `CollectionDisposable.Dispose`.
 
+## Reference Counted Disposables
+
+You can create a reference-counted disposable wrapping a target disposable by passing the target disposable to `ReferenceCountedDisposable.Create`. The reference-counted disposable represents an increment of the reference count, and decrements that reference count when disposed. When the reference count reaches zero, the target disposable is disposed.
+
+You can increment the reference count by calling `IReferenceCountedDisposable<T>.AddReference`, which returns an independent reference-counted disposable representing its own increment of the reference count.
+
+A reference-counted disposable can access its underlying target disposable via `IReferenceCountedDisposable<T>.Target`.
+
+### Advanced: Weak Reference Counted Disposables
+
+You can create a weak-reference-counted disposable by calling `IReferenceCountedDisposable<T>.AddWeakReference`. Weak-reference-counted disposables weakly reference the target disposable and the reference count. They do not represent an increment of the reference count.
+
+You can attempt to increment the reference count for a weak-reference-counted disposable by calling `IWeakReferenceCountedDisposable<T>.TryAddReference`. If successful, this method returns a (strong) reference-counted disposable.
+
+You can also attempt to access the underlying target disposable via `IWeakReferenceCountedDisposable<T>.TryGetTarget`.
+
+### Advanced: Custom Reference Counting
+
+Reference-counted disposables by default use an ephemeron for the reference count, so calling `ReferenceCountedDisposable.Create` multiple times on the same target disposable instance will share the underlying reference count. If the reference count is already be zero, this method will throw `ObjectDisposedException`; to avoid this exception, you can call `ReferenceCountedDisposable.TryCreate`.
+
+If you want to use a *new* reference count and not use the ephemeron, you can call `ReferenceCountedDisposable.CreateWithNewReferenceCounter`. This usage avoids ephemerons, which put pressure on the garbage collector.
+
 ## NoopDisposable
 
 A type implementing both `IDisposable` and `IAsyncDisposable` that does nothing when disposed.
