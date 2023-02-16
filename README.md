@@ -7,6 +7,7 @@ IDisposable helper types.
 
 - `Disposable`/`AsyncDisposable` - When disposed, invokes an `Action`/`Func<ValueTask>`.
 - `CollectionDisposable`/`AsyncCollectionDisposable` - When disposed, disposes a collection of other disposables.
+- `IReferenceCountedDisposable<T>` - Maintains a reference count for a disposable and disposes it when the reference count reaches zero.
 - `NoopDisposable` - When disposed, does nothing.
 
 ## Disposable and AsyncDisposable
@@ -16,6 +17,8 @@ The `Disposable` type wraps an `Action`, and invokes that `Action` exactly once 
 You can create a `Disposable` by calling `Disposable.Create(Action)` or `new Disposable(Action)`.
 
 `AsyncDisposable` is exactly the same as `Disposable` except it wraps a `Func<ValueTask>`.
+
+You can call `Abandon` to have the `Disposable`/`AsyncDisposable` abandon its disposal work and do nothing when it is disposed. `Abandon` returns the `Action` (or `Func<ValueTask>`) that it would have taken on disposal; this can be passed to `Create` to transfer ownership of the disposal actions.
 
 If the `Action` (or `Func<Task>`) throws an exception, only the first caller of `Dispose` (or `DisposeAsync`) will observe the exception. All other calls to `Dispose` / `DisposeAsync` will wait for the delegate to complete, but they will not observe the exception.
 
@@ -34,6 +37,8 @@ You can create a `CollectionDisposable` by calling `CollectionDisposable.Create(
 You can also append a disposable to the `CollectionDisposable` by calling its `Add` method and passing it the disposable. If the `CollectionDisposable` is already disposed (or is in the process of being disposed by another thread), then the additional disposable is disposed immediately.
 
 `AsyncCollectionDisposable` is exactly the same as `CollectionDisposable` except it is a collection of `IAsyncDisposable` instances. You can also create a mixed collection (containing both `IDisposable` and `IAsyncDisposable` instances) by calling `ToAsyncDisposable` on your `IDisposable` instances.
+
+You can call `Abandon` to have the `CollectionDisposable`/`AsyncCollectionDisposable` abandon its disposal work and do nothing when it is disposed. `Abandon` returns the `IEnumerable<IDisposable>` (or `IEnumerable<IAsyncDisposable>`) that it would have disposed; this can be passed to `Create` to transfer ownership of the disposal actions.
 
 By default, all `IAsyncDisposable` instances are disposed concurrently, but you can change this to serial by creating the `AsyncCollectionDisposable` instance with the `AsyncDisposeFlags.ExecuteSerially` flag.
 
