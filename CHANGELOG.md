@@ -1,6 +1,10 @@
 # Changelog
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2023-02-16
+- [Feature] Added `Abandon` methods to ignore disposal or transfer ownership to another disposable. [#17](https://github.com/StephenCleary/Disposables/issues/17)
+- [Fix] Reduced version of `System.Collections.Immutable` dependency to reduce version conflicts. [#16](https://github.com/StephenCleary/Disposables/issues/16)
+
 ## [2.3.0] - 2021-12-30
 
 - [Feature] Added `ReferenceCountedDisposable`, `ReferenceCountedAsyncDisposable`, and associated types. [#12](https://github.com/StephenCleary/Disposables/issues/12)
