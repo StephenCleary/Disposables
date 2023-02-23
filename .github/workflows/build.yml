@@ -49,7 +49,7 @@ jobs:
       
     - name: Get existing tag
       id: existingtag
-      uses: WyriHaximus/github-action-get-previous-tag@v1.3.0
+      uses: WyriHaximus/github-action-get-previous-tag@v1
       continue-on-error: true
 
     - name: Get current version
