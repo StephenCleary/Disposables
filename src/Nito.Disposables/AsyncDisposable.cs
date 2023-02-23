@@ -28,7 +28,7 @@ namespace Nito.Disposables
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
         /// <param name="flags">Flags that control how asynchronous disposal is handled.</param>
         public AsyncDisposable(Func<ValueTask>? dispose, AsyncDisposeFlags flags)
-            : base(dispose!)
+            : base(dispose)
         {
             _flags = flags;
         }

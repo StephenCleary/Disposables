@@ -12,7 +12,7 @@ namespace Nito.Disposables
         /// </summary>
         /// <param name="dispose">The delegate to execute when disposed. If this is <c>null</c>, then this instance does nothing when it is disposed.</param>
         public Disposable(Action? dispose)
-            : base(dispose!)
+            : base(dispose)
         {
         }
 
