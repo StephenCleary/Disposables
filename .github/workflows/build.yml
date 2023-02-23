@@ -54,6 +54,7 @@ jobs:
     - name: Get current version
       run: |
         dotnet tool install --global Nito.ProjProps
+        echo "NEWTAG=v$(projprops --name version --output-format SingleValueOnly --project src --project-search)"
         echo "NEWTAG=v$(projprops --name version --output-format SingleValueOnly --project src --project-search)" >> $GITHUB_ENV
 
     - name: Build
