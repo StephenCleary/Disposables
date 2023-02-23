@@ -1,5 +1,5 @@
 # build.yml v1.5
-# 1.5 - Use bash syntax, avoid set-output.
+# 1.5 - Use bash syntax, avoid set-output, update actions/cache to v3 and WyriHaximus/github-action-get-previous-tag to v1.
 # 1.4 - Avoid set-env.
 # 1.3 - Include tag workflow in this file.
 # 1.2 - Define DOTNET_SKIP_FIRST_TIME_EXPERIENCE/NUGET_XMLDOC_MODE.
@@ -40,7 +40,7 @@ jobs:
         fetch-depth: 0
 
     - name: Cache nuget
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/.nuget/packages
         key: nuget-${{ hashFiles('**/*.csproj') }}-${{ hashFiles('**/*.props') }}
@@ -48,7 +48,7 @@ jobs:
       
     - name: Get existing tag
       id: existingtag
-      uses: WyriHaximus/github-action-get-previous-tag@0.2.0
+      uses: WyriHaximus/github-action-get-previous-tag@v1
       continue-on-error: true
 
     - name: Get current version
