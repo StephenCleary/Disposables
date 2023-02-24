@@ -145,5 +145,17 @@ namespace UnitTests
             await disposable2.DisposeAsync();
             Assert.True(actionInvoked);
         }
+
+        [Fact]
+        public async Task Abandon_DoesNotDispose()
+        {
+            int counter = 0;
+            var disposable = AsyncDisposable.Create(async () => { --counter; });
+            disposable.Abandon();
+            Assert.False(disposable.IsDisposed);
+            await disposable.AddAsync(async () => { ++counter; });
+            await disposable.DisposeAsync();
+            Assert.Equal(1, counter);
+        }
     }
 }

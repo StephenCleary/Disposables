@@ -184,6 +184,18 @@ namespace UnitTests
             Assert.True(actionInvoked);
         }
 
+        [Fact]
+        public async Task Abandon_DoesNotDispose()
+        {
+            int counter = 0;
+            var disposable = CollectionAsyncDisposable.Create(new AsyncDisposable(async () => { --counter; }));
+            disposable.Abandon();
+            Assert.False(disposable.IsDisposed);
+            await disposable.AddAsync(new AsyncDisposable(async () => { ++counter; }));
+            await disposable.DisposeAsync();
+            Assert.Equal(1, counter);
+        }
+
         private sealed class BoolHolder
         {
             public bool Value { get; set; }

@@ -101,5 +101,17 @@ namespace UnitTests
             disposable2.Dispose();
             Assert.True(actionInvoked);
         }
+
+        [Fact]
+        public void Abandon_DoesNotDispose()
+        {
+            int counter = 0;
+            var disposable = Disposable.Create(() => { --counter; });
+            disposable.Abandon();
+            Assert.False(disposable.IsDisposed);
+            disposable.Add(() => { ++counter; });
+            disposable.Dispose();
+            Assert.Equal(1, counter);
+        }
     }
 }
