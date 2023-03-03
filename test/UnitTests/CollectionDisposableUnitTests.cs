@@ -4,6 +4,7 @@ using Nito.Disposables;
 using System.Linq;
 using System.Threading;
 using Xunit;
+using System.Collections.Generic;
 
 namespace UnitTests
 {
@@ -37,6 +38,15 @@ namespace UnitTests
         }
 
         [Fact]
+        public void Dispose_MultipleChildren_DisposesBothChildrenInInverseOrder()
+        {
+            var results = new List<int>();
+            var disposable = CollectionDisposable.Create(new Disposable(() => { results.Add(0); }), new Disposable(() => { results.Add(1); }));
+            disposable.Dispose();
+            Assert.Equal(new[] { 1, 0 }, results);
+        }
+
+        [Fact]
         public void Dispose_EnumerableChildren_DisposesAllChildren()
         {
             var action1Invoked = new BoolHolder();
@@ -58,7 +68,17 @@ namespace UnitTests
             Assert.True(action1Invoked);
             Assert.True(action2Invoked);
         }
-        
+
+        [Fact]
+        public void Dispose_AfterAdd_DisposesBothChildrenInInverseOrder()
+        {
+            var results = new List<int>();
+            var disposable = CollectionDisposable.Create(new Disposable(() => { results.Add(0); }));
+            disposable.Add(new Disposable(() => { results.Add(1); }));
+            disposable.Dispose();
+            Assert.Equal(new[] { 1, 0 }, results);
+        }
+
         [Fact]
         public void Dispose_AfterAddingNullChild_DoesNotThrow()
         {
@@ -122,6 +142,16 @@ namespace UnitTests
             var disposable2 = CollectionDisposable.Create(disposable.Abandon());
             disposable2.Dispose();
             Assert.True(actionInvoked);
+        }
+
+        [Fact]
+        public void AbandonWithConstruction_MultipleChildren_DisposesBothChildrenInInverseOrder()
+        {
+            var results = new List<int>();
+            var disposable = CollectionDisposable.Create(new Disposable(() => { results.Add(0); }), new Disposable(() => { results.Add(1); }));
+            var disposable2 = CollectionDisposable.Create(disposable.Abandon());
+            disposable2.Dispose();
+            Assert.Equal(new[] { 1, 0 }, results);
         }
 
         [Fact]

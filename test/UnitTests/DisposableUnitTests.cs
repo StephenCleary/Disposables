@@ -4,6 +4,7 @@ using Nito.Disposables;
 using System.Linq;
 using System.Threading;
 using Xunit;
+using System.Collections.Generic;
 
 namespace UnitTests
 {
@@ -35,6 +36,16 @@ namespace UnitTests
             disposable.Dispose();
             Assert.True(action1Invoked);
             Assert.True(action2Invoked);
+        }
+
+        [Fact]
+        public void Dispose_AfterAdd_InvokesBothActionsInInverseOrder()
+        {
+            var results = new List<int>();
+            var disposable = Disposable.Create(() => { results.Add(0); });
+            disposable.Add(() => { results.Add(1); });
+            disposable.Dispose();
+            Assert.Equal(new[] { 1, 0 }, results);
         }
 
         [Fact]
@@ -100,6 +111,17 @@ namespace UnitTests
             var disposable2 = Disposable.Create(disposable.Abandon());
             disposable2.Dispose();
             Assert.True(actionInvoked);
+        }
+
+        [Fact]
+        public void AbandonWithConstruction_AfterAdd_InvokesBothActionsInInverseOrder()
+        {
+            var results = new List<int>();
+            var disposable = Disposable.Create(() => { results.Add(0); });
+            disposable.Add(() => { results.Add(1); });
+            var disposable2 = Disposable.Create(disposable.Abandon());
+            disposable2.Dispose();
+            Assert.Equal(new[] { 1, 0 }, results);
         }
 
         [Fact]

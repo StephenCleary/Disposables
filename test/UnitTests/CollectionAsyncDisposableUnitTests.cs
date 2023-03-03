@@ -4,6 +4,7 @@ using Nito.Disposables;
 using System.Linq;
 using System.Threading;
 using Xunit;
+using System.Collections.Generic;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
@@ -39,6 +40,15 @@ namespace UnitTests
         }
 
         [Fact]
+        public async Task Dispose_MultipleChildren_DisposesBothChildrenInInverseOrder()
+        {
+            var results = new List<int>();
+            var disposable = CollectionAsyncDisposable.Create(new AsyncDisposable(async () => { results.Add(0); }), new AsyncDisposable(async () => { results.Add(1); }));
+            await disposable.DisposeAsync();
+            Assert.Equal(new[] { 1, 0 }, results);
+        }
+
+        [Fact]
         public async Task Dispose_EnumerableChildren_DisposesAllChildren()
         {
             var action1Invoked = new BoolHolder();
@@ -59,6 +69,16 @@ namespace UnitTests
             await disposable.DisposeAsync();
             Assert.True(action1Invoked);
             Assert.True(action2Invoked);
+        }
+
+        [Fact]
+        public async Task Dispose_AfterAdd_DisposesBothChildrenInInverseOrder()
+        {
+            var results = new List<int>();
+            var disposable = CollectionAsyncDisposable.Create(new AsyncDisposable(async () => { results.Add(0); }));
+            await disposable.AddAsync(new AsyncDisposable(async () => { results.Add(1); }));
+            await disposable.DisposeAsync();
+            Assert.Equal(new[] { 1, 0 }, results);
         }
 
         [Fact]
@@ -182,6 +202,16 @@ namespace UnitTests
             var disposable2 = CollectionAsyncDisposable.Create(disposable.Abandon());
             await disposable2.DisposeAsync();
             Assert.True(actionInvoked);
+        }
+
+        [Fact]
+        public async Task AbandonWithConstruction_MultipleChildren_DisposesBothChildrenInInverseOrder()
+        {
+            var results = new List<int>();
+            var disposable = CollectionAsyncDisposable.Create(new AsyncDisposable(async () => { results.Add(0); }), new AsyncDisposable(async () => { results.Add(1); }));
+            var disposable2 = CollectionAsyncDisposable.Create(disposable.Abandon());
+            await disposable2.DisposeAsync();
+            Assert.Equal(new[] { 1, 0 }, results);
         }
 
         [Fact]
