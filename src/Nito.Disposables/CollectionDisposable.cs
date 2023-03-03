@@ -32,7 +32,7 @@ namespace Nito.Disposables
         /// <inheritdoc />
         protected override void Dispose(ImmutableQueue<IDisposable> context)
         {
-            foreach (var disposable in context)
+            foreach (var disposable in context.Reverse())
                 disposable?.Dispose();
         }
 

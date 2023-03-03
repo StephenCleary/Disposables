@@ -49,12 +49,12 @@ namespace Nito.Disposables
         {
             if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
             {
-                foreach (var disposable in context)
+                foreach (var disposable in context.Reverse())
                     await disposable.DisposeAsync().ConfigureAwait(false);
             }
             else
             {
-                var tasks = context.Select(disposable => disposable.DisposeAsync().AsTask()).ToList();
+                var tasks = context.Reverse().Select(disposable => disposable.DisposeAsync().AsTask()).ToList();
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
         }

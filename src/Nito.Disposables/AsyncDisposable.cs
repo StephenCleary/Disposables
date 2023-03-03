@@ -43,19 +43,19 @@ namespace Nito.Disposables
             if (handlers.Length == 1)
                 return context();
 
-            return DoDisposeAsync(handlers);
+            return DoDisposeAsync(handlers.Reverse().Cast<Func<ValueTask>>());
         }
 
-        private async ValueTask DoDisposeAsync(IReadOnlyList<Delegate> handlers)
+        private async ValueTask DoDisposeAsync(IEnumerable<Func<ValueTask>> handlers)
         {
             if ((_flags & AsyncDisposeFlags.ExecuteConcurrently) != AsyncDisposeFlags.ExecuteConcurrently)
             {
                 foreach (var handler in handlers)
-                    await ((Func<ValueTask>) handler)().ConfigureAwait(false);
+                    await handler().ConfigureAwait(false);
             }
             else
             {
-                var tasks = handlers.Select(handler => ((Func<ValueTask>) handler)().AsTask()).ToList();
+                var tasks = handlers.Select(handler => handler().AsTask()).ToList();
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Nito.Disposables
 {
@@ -17,7 +18,13 @@ namespace Nito.Disposables
         }
 
         /// <inheritdoc />
-        protected override void Dispose(Action? context) => context?.Invoke();
+        protected override void Dispose(Action? context)
+        {
+            if (context == null)
+                return;
+            foreach (var handler in context.GetInvocationList().Reverse().Cast<Action>())
+                handler();
+        }
 
         /// <summary>
         /// Adds a delegate to be executed when this instance is disposed. If this instance is already disposed or disposing, then <paramref name="dispose"/> is executed immediately.
