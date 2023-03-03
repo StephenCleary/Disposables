@@ -24,9 +24,9 @@ If the `Action` (or `Func<Task>`) throws an exception, only the first caller of 
 
 ### Advanced
 
-You can append an `Action` to a `Disposable` by calling its `Add` method with the `Action` to add. If the `Disposable` is already disposed (or is in the process of being disposed by another thread), then the additional `Action` is invoked immediately.
+You can append an `Action` to a `Disposable` by calling its `Add` method with the `Action` to add. When the `Disposable` is disposed, it will call its actions in reverse order. When `Add` is called, if the `Disposable` is already disposed (or is in the process of being disposed by another thread), then the additional `Action` is invoked immediately by the current thread after the disposal completes, and the other thread is not blocked waiting for the `Action` to complete.
 
-`AsyncDisposable` may also have multiple delegates. By default, they are all invoked concurrently, but you can change this to serial by creating the instance with the `AsyncDisposeFlags.ExecuteSerially` flag.
+`AsyncDisposable` may also have multiple delegates. By default, they are all invoked serially in reverse order, but you can change this to concurrent by creating the instance with the `AsyncDisposeFlags.ExecuteConcurrently` flag.
 
 ## CollectionDisposable
 
@@ -34,13 +34,13 @@ You can append an `Action` to a `Disposable` by calling its `Add` method with th
 
 You can create a `CollectionDisposable` by calling `CollectionDisposable.Create(...)` or `new CollectionDisposable(...)`, passing the collection of disposables.
 
-You can also append a disposable to the `CollectionDisposable` by calling its `Add` method and passing it the disposable. If the `CollectionDisposable` is already disposed (or is in the process of being disposed by another thread), then the additional disposable is disposed immediately.
+You can also append a disposable to the `CollectionDisposable` by calling its `Add` method and passing it the disposable. If the `CollectionDisposable` is already disposed (or is in the process of being disposed by another thread), then the additional disposable is disposed immediately by the current thread after the disposal completes, and the other thread is not blocked waiting for the additional disposable to dispose.
 
 `AsyncCollectionDisposable` is exactly the same as `CollectionDisposable` except it is a collection of `IAsyncDisposable` instances. You can also create a mixed collection (containing both `IDisposable` and `IAsyncDisposable` instances) by calling `ToAsyncDisposable` on your `IDisposable` instances.
 
 You can call `Abandon` to have the `CollectionDisposable`/`AsyncCollectionDisposable` abandon its disposal work and do nothing when it is disposed. `Abandon` returns the `IEnumerable<IDisposable>` (or `IEnumerable<IAsyncDisposable>`) that it would have disposed; this can be passed to `Create` to transfer ownership of the disposal actions.
 
-By default, all `IAsyncDisposable` instances are disposed concurrently, but you can change this to serial by creating the `AsyncCollectionDisposable` instance with the `AsyncDisposeFlags.ExecuteSerially` flag.
+By default, all `IAsyncDisposable` instances are disposed serially in reverse order, but you can change this to concurrent by creating the `AsyncCollectionDisposable` instance with the `AsyncDisposeFlags.ExecuteConcurrently` flag.
 
 ### Fixing Other Disposables
 

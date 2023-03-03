@@ -1,9 +1,10 @@
 # Changelog
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.4.0] - 2023-02-16
+## [2.4.0] - 2023-03-03
 - [Feature] Added `Abandon` methods to ignore disposal or transfer ownership to another disposable. [#17](https://github.com/StephenCleary/Disposables/issues/17)
 - [Fix] Reduced version of `System.Collections.Immutable` dependency to reduce version conflicts. [#16](https://github.com/StephenCleary/Disposables/issues/16)
+- [Fix] Specified order of delegates/children disposal: inverse order of the collection. Note that this is a change in behavior; it was unspecified before but would always execute in *forward* order, meaning the first delegate/child added would be the first one disposed.
 
 ## [2.3.0] - 2021-12-30
 
