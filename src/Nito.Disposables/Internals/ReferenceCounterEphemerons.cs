@@ -1,32 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Runtime.CompilerServices;
 
-namespace Nito.Disposables.Internals
+namespace Nito.Disposables.Internals;
+
+/// <summary>
+/// The collection of reference counters, stored as ephemerons.
+/// </summary>
+public static class ReferenceCounterEphemerons
 {
     /// <summary>
-    /// The collection of reference counters, stored as ephemerons.
+    /// Increments and returns the reference counter for the specified target, creating it if necessary.
+    /// Returns <c>null</c> if the reference counter has already reached 0.
     /// </summary>
-    public static class ReferenceCounterEphemerons
+    public static IReferenceCounter? TryGetAndIncrementOrCreate(object target)
     {
-        /// <summary>
-        /// Increments and returns the reference counter for the specified target, creating it if necessary.
-        /// Returns <c>null</c> if the reference counter has already reached 0.
-        /// </summary>
-        public static IReferenceCounter? TryGetAndIncrementOrCreate(object target)
+        ReferenceCounter? createdReferenceCounter = null;
+        var referenceCounter =  Ephemerons.GetValue(target, t => createdReferenceCounter = new ReferenceCounter(t));
+        if (referenceCounter != createdReferenceCounter)
         {
-            ReferenceCounter? createdReferenceCounter = null;
-            var referenceCounter =  Ephemerons.GetValue(target, t => createdReferenceCounter = new ReferenceCounter(t));
-            if (referenceCounter != createdReferenceCounter)
-            {
-                if (!referenceCounter.TryIncrementCount())
-                    return null;
-            }
-
-            return referenceCounter;
+            if (!referenceCounter.TryIncrementCount())
+                return null;
         }
 
-        private static readonly ConditionalWeakTable<object, IReferenceCounter> Ephemerons = new();
+        return referenceCounter;
     }
+
+    private static readonly ConditionalWeakTable<object, IReferenceCounter> Ephemerons = new();
 }
