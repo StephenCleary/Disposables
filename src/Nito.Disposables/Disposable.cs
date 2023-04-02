@@ -27,6 +27,17 @@ public sealed class Disposable : SingleDisposable<Action?>
     }
 
     /// <summary>
+    /// Adds a delegate to be executed when this instance is disposed. If this instance is already disposed or disposing, then <paramref name="dispose"/> is not added and this method returns <c>false</c>.
+    /// </summary>
+    /// <param name="dispose">The delegate to add. May be <c>null</c> to indicate no additional action.</param>
+    public bool TryAdd(Action? dispose)
+    {
+        if (dispose == null)
+            return false;
+        return TryUpdateContext(x => x + dispose);
+    }
+
+    /// <summary>
     /// Adds a delegate to be executed when this instance is disposed. If this instance is already disposed or disposing, then <paramref name="dispose"/> is executed immediately.
     /// If this method is called multiple times concurrently at the same time this instance is disposed, then the different <paramref name="dispose"/> arguments may be disposed concurrently.
     /// </summary>

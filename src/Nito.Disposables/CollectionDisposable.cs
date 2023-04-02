@@ -37,6 +37,17 @@ public sealed class CollectionDisposable : SingleDisposable<ImmutableQueue<IDisp
     }
 
     /// <summary>
+    /// Adds a disposable to the collection of disposables. If this instance is already disposed or disposing, then <paramref name="disposable"/> is not added and this method returns <c>false</c>.
+    /// </summary>
+    /// <param name="disposable">The disposable to add to our collection. May be <c>null</c>.</param>
+    public bool TryAdd(IDisposable? disposable)
+    {
+        if (disposable == null)
+            return true;
+        return TryUpdateContext(x => x.Enqueue(disposable));
+    }
+
+    /// <summary>
     /// Adds a disposable to the collection of disposables. If this instance is already disposed or disposing, then <paramref name="disposable"/> is disposed immediately.
     /// If this method is called multiple times concurrently at the same time this instance is disposed, then the different <paramref name="disposable"/> arguments may be disposed concurrently.
     /// </summary>
