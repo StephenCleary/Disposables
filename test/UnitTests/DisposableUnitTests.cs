@@ -72,7 +72,9 @@ public class DisposableUnitTests
         var disposeTask = Task.Run(() => disposable.Dispose());
         ready.Wait();
         var addTask = Task.Run(() => disposable.Add(() => { action2Invoked = true; }));
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.False(addTask.Wait(100));
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Assert.True(action1Invoked);
         Assert.False(action2Invoked);
         signal.Set();
