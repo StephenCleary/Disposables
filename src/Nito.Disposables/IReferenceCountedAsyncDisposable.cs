@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_1
+﻿#if !NETSTANDARD1_0 && !NETSTANDARD2_0 && !NET461
 using System;
 
 namespace Nito.Disposables;

@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_1
+﻿#if !NETSTANDARD1_0 && !NETSTANDARD2_0 && !NET461
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,7 +25,7 @@ public sealed class ReferenceCountedAsyncDisposable<T> : SingleAsyncDisposable<I
     }
 
     /// <inheritdoc/>
-    protected override ValueTask DisposeAsync(IReferenceCounter referenceCounter) => (referenceCounter.TryDecrementCount() as IAsyncDisposable)?.DisposeAsync() ?? new ValueTask();
+    protected override ValueTask DisposeAsync(IReferenceCounter context) => (context.TryDecrementCount() as IAsyncDisposable)?.DisposeAsync() ?? new ValueTask();
 
     T? IReferenceCountedAsyncDisposable<T>.Target => (T?) ReferenceCounter.TryGetTarget();
 

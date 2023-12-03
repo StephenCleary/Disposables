@@ -1,0 +1,6 @@
+root = true
+
+[*.cs]
+dotnet_diagnostic.CA1008.severity = none # Use None for flags enum value of 0
+dotnet_diagnostic.CA1513.severity = none # Use ObjectDisposedException.ThrowIf
+dotnet_diagnostic.CA1711.severity = none # Don't name enum with Flags suffix

@@ -7,7 +7,7 @@ namespace Nito.Disposables;
 /// A singleton disposable that does nothing when disposed.
 /// </summary>
 public sealed class NoopDisposable: IDisposable
-#if NETSTANDARD2_1
+#if !NETSTANDARD1_0 && !NETSTANDARD2_0 && !NET461
     , IAsyncDisposable
 #endif
 {
@@ -22,11 +22,11 @@ public sealed class NoopDisposable: IDisposable
     {
     }
 
-#if NETSTANDARD2_1
+#if !NETSTANDARD1_0 && !NETSTANDARD2_0 && !NET461
     /// <summary>
-    /// Does nothing.
-    /// </summary>
-    public ValueTask DisposeAsync() => new ValueTask();
+	/// Does nothing.
+	/// </summary>
+	public ValueTask DisposeAsync() => new ValueTask();
 #endif
 
     /// <summary>

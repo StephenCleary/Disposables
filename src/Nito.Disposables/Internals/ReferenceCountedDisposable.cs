@@ -21,7 +21,7 @@ public sealed class ReferenceCountedDisposable<T> : SingleDisposable<IReferenceC
     }
 
     /// <inheritdoc/>
-    protected override void Dispose(IReferenceCounter referenceCounter) => (referenceCounter.TryDecrementCount() as IDisposable)?.Dispose();
+    protected override void Dispose(IReferenceCounter context) => (context.TryDecrementCount() as IDisposable)?.Dispose();
 
     T? IReferenceCountedDisposable<T>.Target => (T?) ReferenceCounter.TryGetTarget();
 
@@ -30,7 +30,7 @@ public sealed class ReferenceCountedDisposable<T> : SingleDisposable<IReferenceC
         var referenceCounter = ReferenceCounter;
         if (!referenceCounter.TryIncrementCount())
             throw new ObjectDisposedException(nameof(ReferenceCountedDisposable<T>)); // cannot actually happen
-        return new ReferenceCountedDisposable<T>(referenceCounter);
+		return new ReferenceCountedDisposable<T>(referenceCounter);
     }
 
     IWeakReferenceCountedDisposable<T> IReferenceCountedDisposable<T>.AddWeakReference() => new WeakReferenceCountedDisposable<T>(ReferenceCounter);
