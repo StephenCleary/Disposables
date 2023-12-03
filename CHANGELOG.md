@@ -3,6 +3,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [2.5.0] - TBD
 - [Feature] Added `TryAdd` methods to collection/delegate disposables to synchronously attempt to add.
+- [Feature] Added trimming/single-file/AOT support (`net8.0` only).
 
 ## [2.4.0] - 2023-03-03
 - [Feature] Added `Abandon` methods to ignore disposal or transfer ownership to another disposable. [#17](https://github.com/StephenCleary/Disposables/issues/17)
