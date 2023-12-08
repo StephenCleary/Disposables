@@ -1,7 +1,7 @@
 # Changelog
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.5.0] - TBD
+## [2.5.0] - 2023-12-07
 - [Feature] Added `TryAdd` methods to collection/delegate disposables to synchronously attempt to add.
 - [Feature] Added trimming/single-file/AOT support (`net8.0` only).
 
